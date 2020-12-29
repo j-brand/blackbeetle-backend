@@ -45,10 +45,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     | Albums routes - Album
     */
     Route::group(['prefix' => 'album'], function () {
+        Route::get('/', [AlbumController::class, 'index']);
+        Route::get('/{id}', [AlbumController::class, 'edit']);
         Route::post('/create', [AlbumController::class, 'store']);
-        Route::options('/create', ['middleware' => 'cors', function () {
-            return;
-        }]);
     });
 
 

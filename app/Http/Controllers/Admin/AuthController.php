@@ -15,6 +15,7 @@ class AuthController extends Controller
     	$validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string',
+        
             
         ]);
             
@@ -25,6 +26,9 @@ class AuthController extends Controller
         if (!  auth()->attempt($validator->validated())) {
             return response()->json(['message' => 'So nicht du Trottel!'], 403);
         }
+
+        return Auth::user();
+
 
     }
 

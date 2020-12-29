@@ -15,6 +15,16 @@ class Image extends Model
         'title', 'description', 'path', 'extension', 'filesize', 'height', 'width'
     ];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
     public function stories()
     {
         return $this->belongsToMany('App\Models\Story');

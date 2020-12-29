@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 use App\Models\Album;
+use App\Models\Image;
 
 class AlbumController extends Controller
 {
@@ -75,7 +77,7 @@ class AlbumController extends Controller
             $album->title_image = 1;
         }
         $album->save();
-        return response()->json(['success' => true, 'album_id' => $album->id]);
+        return response()->json($album);
     }
 
     /**
@@ -87,13 +89,13 @@ class AlbumController extends Controller
     public function edit($id)
     {
 
-        $album = Album::find($id);
-        $title_image = $album->title_image()->first();
-        $images = $album->images;
-        if (!$title_image) {
-            $title_image = $images[0];
-        }
-        return view('admin.album.edit', compact('album', 'title_image', 'images'));
+        $album = Album::with('images')->where('id', $id)->first();
+        $title_image = Image::find($album->title_image)->first();
+        $album->title_image = $title_image;
+
+        return response()->json($album);
+
+
     }
 
     /**
@@ -217,7 +219,7 @@ class AlbumController extends Controller
     public function generate($id)
     {
         $album = Album::find($id);
-        if(!$album){
+        if (!$album) {
             return response()->json([
                 'message' => 'Album existiert nicht.'
             ]);
@@ -227,7 +229,7 @@ class AlbumController extends Controller
         $message = [];
         foreach ($images as $image) {
             GenerateImageVersions::dispatch($image, $album->path, 'album_image');
-            $message[] = 'ein Bild (ID: '.$image->id.') wurde zur Warteschlange hinzugefügt';
+            $message[] = 'ein Bild (ID: ' . $image->id . ') wurde zur Warteschlange hinzugefügt';
         };
 
         $titleImage === null ? GenerateImageVersions::dispatch('dummy.png', $album->path, 'album_title_image') : GenerateImageVersions::dispatch($titleImage, $album->path, 'album_title_image');
@@ -236,5 +238,4 @@ class AlbumController extends Controller
             'message' => $message
         ]);
     }
-
 }
