@@ -48,6 +48,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/', [AlbumController::class, 'index']);
         Route::get('/{id}', [AlbumController::class, 'edit']);
         Route::post('/create', [AlbumController::class, 'store']);
+        Route::post('/update/{id}', [AlbumController::class, 'update']);
+        Route::post('/upload/{id}', [AlbumController::class, 'upload']);
     });
 
 

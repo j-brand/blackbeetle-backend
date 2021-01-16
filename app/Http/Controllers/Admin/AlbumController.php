@@ -90,12 +90,10 @@ class AlbumController extends Controller
     {
 
         $album = Album::with('images')->where('id', $id)->first();
-        $title_image = Image::find($album->title_image)->first();
+        $title_image = Image::where('id', $album->title_image)->first();
         $album->title_image = $title_image;
 
         return response()->json($album);
-
-
     }
 
     /**
@@ -131,15 +129,16 @@ class AlbumController extends Controller
             $imageController = new ImageController();
             $response = $imageController->save($file, $album->path, $sizeConf);
             $request->merge(['title_image' => $response->id]);
-
+            $album->title_image = $response->id;
 
             $album->fill($request->except(['image_upload']))->save();
-            return response()->json(['success' => true, 'imgData' => $response]);
         } else {
-            $album->fill($request->except(['image_upload']))->save();
+            $album->fill($request->all())->save();
         }
 
-        return response()->json(['success' => true]);
+        $title_image = Image::where('id', $album->title_image)->first();
+        $album->title_image = $title_image;
+        return response()->json($album, 200);
     }
 
     /**
