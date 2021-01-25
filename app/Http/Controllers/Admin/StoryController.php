@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\Admin\ImageController;
 use Illuminate\Http\Request;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use Log;
 
-use App\Story;
-use App\Image;
-use Str;
+use App\Models\Story;
+use App\Models\Image;
+use Illuminate\Support\Str;
 
 class StoryController extends Controller
 {
@@ -25,18 +25,9 @@ class StoryController extends Controller
     public function index()
     {
         $stories = Story::withCount('posts')->get();
-        return view('admin.story.index', compact('stories'));
+        return response()->json($stories);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.story.create');
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -49,25 +40,24 @@ class StoryController extends Controller
 
         $validator = Validator::make($request->all(), [
             'active'              => 'integer',
-            'slug'                => 'unique:albums|string|max:255',
-            'title'               => 'required|unique:albums|string|max:255',
+            'slug'                => 'required|unique:stories|string|max:255',
+            'title'               => 'required|unique:stories|string|max:255',
             'description'         => 'string|max:1000',
             'image_upload'        => 'required|mimes:jpeg,bmp,png,jpg,JPG|max:2500',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
+
 
         $story = new story();
         $story->fill($request->except(['image_upload']));
-        if (!$request->slug) {
-            $story->slug = Str::slug($request->get('title'));
-        }
+        $story->slug = Str::slug($request->title);
         $story->save();
 
         $story->path = 'stories/' . $story->id . '/';
-        $sizeConf="story_title_image";
+        $sizeConf = "story_title_image";
 
         if ($request->hasFile('image_upload')) {
             $file = $request->file('image_upload');
@@ -81,10 +71,7 @@ class StoryController extends Controller
 
         $story->save();
 
-        return response()->json([
-            'success' => 'true',
-            'story_id' => $story->id
-        ]);
+        return response()->json($story);
     }
 
     /**
@@ -96,11 +83,11 @@ class StoryController extends Controller
     public function edit($id)
     {
 
-        $story = Story::find($id);
-        $title_image = $story->title_image()->first();
-        $posts = $story->posts()->orderBy('position', 'asc')->get();
+        $story = Story::with('posts')->where('id', $id)->first();
+        $title_image = Image::where('id', $story->title_image)->first();
+        $story->title_image = $title_image;
 
-        return view('admin.story.edit', compact('story', 'title_image', 'posts'));
+        return response()->json($story);
     }
 
     /**
@@ -122,7 +109,7 @@ class StoryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->messages(), 400);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
 
@@ -162,6 +149,4 @@ class StoryController extends Controller
         }
         return response()->json(['success' => true]);
     }
-
-
 }

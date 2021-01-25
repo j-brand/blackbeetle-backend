@@ -1,43 +1,36 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
-use App\Image;
+use App\Models\Image;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Carbon\Carbon;
-use Faker\Generator as Faker;
 
-$factory->define(Image::class, function (Faker $faker, $params) {
+class ImageFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Image::class;
 
-    $width = '500';
-    $height = '500';
-
-    $date = new DateTime();
-    $fileName = $date->getTimestamp() . '.jpg';
-
-    $path = 'images/test/';
-
-    if (array_key_exists('width', $params) && array_key_exists('height', $params)) {
-        $width = $params['width'];
-        $height = $params['height'];
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'title' => 'dummy_01',
+            'description' => 'Test Image',
+            'path' => 'static/test/',
+            'extension' => 'jpg',
+            'file_size' => null,
+            'height' => null,
+            'width' => null,
+            'created_at'    => Carbon::now()
+        ];
     }
-
-    if(array_key_exists('title', $params)){
-        $fileName = $params['title'];
-    }
-    
-    $url = 'https://picsum.photos/' . $width . '/' . $height;
-
-
-
-    $file = Storage::disk('public')->put($path . $fileName, file_get_contents($url));
-
-    return [
-
-        'title' => $faker->unixTime($max = 'now'),
-        'description' => $faker->sentence(8),
-        'path' => url('storage/' . $path . $fileName),
-        'extension' => 'jpg',
-        'created_at' => Carbon::now(),
-
-    ];
-});
+}

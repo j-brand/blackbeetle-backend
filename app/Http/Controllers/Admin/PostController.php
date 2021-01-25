@@ -14,11 +14,13 @@ use App\Http\Requests\UpdateBlogPost;
 use Illuminate\Http\UploadedFile;
 
 use App\Http\Controllers\Admin\ImageController;
-
+use App\Http\Requests\Post\BlogPostUpdate;
+use App\Http\Requests\Post\BlogPostStore;
+use App\Http\Requests\Post\BlogPostUploadImage;
 use App\Jobs\GenerateImageVersions;
 use Validator;
 
-use App\Post;
+use App\Models\Post;
 use App\Story;
 use App\Image;
 
@@ -77,7 +79,7 @@ class PostController extends Controller
      * @param  \App\Http\Requests\StoreBlogPost  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreBlogPost $request)
+    public function store(BlogPostStore $request)
     {
         $validated = $request->validated();
 
@@ -130,25 +132,8 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        $post = Post::find($id);
-
-        switch ($post->type) {
-            case 'html':
-                return view('admin.post.edit.html', compact('post'));
-                break;
-            case 'image':
-                return view('admin.post.edit.image', ['post' => Post::with('images')->where('id', $id)->orderBy('position')->first()]);
-                break;
-            case 'map':
-                return view('admin.post.edit.map', compact('post'));
-                break;
-            case 'video':
-                return view('admin.post.edit.video', compact('post'));
-                break;
-            default:
-                return response()->json(['success' => false]);
-                break;
-        }
+        $post = Post::with('images')->where('id', $id)->first();
+        return response()->json($post, 200);
     }
 
     /**
@@ -158,34 +143,33 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateBlogPost $request, $id)
+    public function update(BlogPostUpdate $request, $id)
     {
 
         $validated = $request->validated();
         $post = Post::find($id);
-        
+
         if ($post->type === 'video' && sizeof($validated) > 1) {
 
             $post->fill($request->except(['content']));
-            
+
             $content = json_decode($validated['content']);
-            
+
             $path =  'stories/' . $post->story_id . '/posts/' . $post->id;
             Storage::move('public/temp/' . $content->name, 'public/' . $path . '/' . $content->name);
-            
+
             //delete old video from post folder.
             $old = json_decode($post->content);
-            Storage::delete('public/'.$old->path . '/' . $old->name);
-            
+            Storage::delete('public/' . $old->path . '/' . $old->name);
+
             $content->path = $path;
             $post->content = json_encode($content);
             $post->save();
-        }else{
-            $post->fill($request->all())->save();
-            
+        } else {
+            $post->update($validated);
         }
 
-        return response()->json(['success' => true, 'message' => 'Beitrag wurde gespeichert.']);
+        return response()->json($post, 200);
     }
 
     /**
@@ -204,12 +188,8 @@ class PostController extends Controller
         return response()->json(['success' => true, 'message' => 'Beitrag wurde gelöscht.']);
     }
 
-    public function uploadImage(Request $request, $id)
+    public function uploadImage(BlogPostUploadImage $request, $id)
     {
-
-        request()->validate([
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif',
-        ]);
 
         $file = $request->file('file');
 
@@ -217,7 +197,7 @@ class PostController extends Controller
         $sizeConf = "image_post";
         $path = $post->story()->value('path') . $post->id . '/';
 
-        
+
         $imageController = new ImageController();
         $image = $imageController->save($file, $path, $sizeConf);
 
@@ -302,48 +282,12 @@ class PostController extends Controller
         }
     }
 
-    public function changePostPosition(Request $request)
-    {
-
-        $validator = Validator::make($request->all(), [
-            'one'            => 'required|integer',
-            'two'            => 'required|integer',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
-        }
-
-        $postOne = Post::find($request->one);
-        $posiOne = $postOne->position;
-
-        $postTwo = Post::find($request->two);
-
-        $postOne->position = $postTwo->position;
-        $postTwo->position = $posiOne;
-
-        $postTwo->save();
-        $postOne->save();
-
-        return response()->json(['success' => true, 'message' => 'Position erfolgreich geändert.']);
-    }
 
     public function changeImagePosition(Request $request, $id)
     {
 
-        $validator = Validator::make($request->all(), [
-            'image_one'            => 'required|integer',
-            'image_two'            => 'required|integer',
-            'posi_one'            => 'required|integer',
-            'posi_two'            => 'required|integer',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
-        }
-
-        $post = Post::find($id);
-        $post->images()->updateExistingPivot($request->image_one, ['position' => $request->posi_one]);
-        $post->images()->updateExistingPivot($request->image_two, ['position' => $request->posi_two]);
-
+        $album = Post::find($id);
+        $album->images()->updateExistingPivot($request->image_id, ['position' => $request->position]);
         return response()->json(['success' => true]);
     }
 
@@ -357,14 +301,14 @@ class PostController extends Controller
                 'message' => 'kein Bilder Beitrag'
             ]);
         }
-/*         $imageController = new ImageController();
+        /*         $imageController = new ImageController();
         foreach ($post->images as $image) {
             $message[] = $imageController->generate($image->path . $image->title . '.' . $image->extension, $image->path, $sizeConf);
         };
  */
         foreach ($post->images as $image) {
             GenerateImageVersions::dispatch($image, 'string', 'image_post');
-            $message[] = 'ein Bild (ID: '.$image->id.') wurde zur Warteschlange hinzugefügt';
+            $message[] = 'ein Bild (ID: ' . $image->id . ') wurde zur Warteschlange hinzugefügt';
         };
 
         return response()->json([

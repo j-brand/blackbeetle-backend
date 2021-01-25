@@ -7,8 +7,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AlbumController;
 use App\Http\Controllers\Admin\AuthController;
-
-
+use App\Http\Controllers\Admin\ImageController;
+use App\Http\Controllers\Admin\StoryController;
+use App\Http\Controllers\Admin\PostController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,9 +50,47 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/{id}', [AlbumController::class, 'edit']);
         Route::post('/create', [AlbumController::class, 'store']);
         Route::post('/update/{id}', [AlbumController::class, 'update']);
+        Route::delete('/{id}', [AlbumController::class, 'destroy']);
         Route::post('/upload/{id}', [AlbumController::class, 'upload']);
+        Route::post('/{id}/position', [AlbumController::class, 'changeImagePosition']);
+        Route::delete('/image/{id}', [AlbumController::class, 'deleteImage']);
     });
 
+    /*
+    | Story routes - Geschichten
+    */
+    Route::group(['prefix' => 'story'], function () {
+        Route::get('/', [StoryController::class, 'index']);
+        Route::get('/{id}', [StoryController::class, 'edit']);
+        Route::post('/create', [StoryController::class, 'store']);
+        Route::post('/update/{id}', [StoryController::class, 'update']);
+        Route::delete('/{id}', [StoryController::class, 'destroy']);
+        Route::post('/upload/{id}', [StoryController::class, 'upload']);
+    });
+
+    /*
+    | Post routes - Beiträge
+    */
+    Route::group(['prefix' => 'post'], function () {
+       // Route::get('/', [PostController::class, 'index']);
+        Route::get('/{id}', [PostController::class, 'edit']);
+        Route::post('/create', [PostController::class, 'store']);
+        Route::post('/update/{id}', [PostController::class, 'update']);
+        Route::delete('/{id}', [PostController::class, 'destroy']);
+        Route::post('/upload/{id}', [PostController::class, 'uploadImage']);
+        Route::post('/{id}/position', [PostController::class, 'changeImagePosition']);
+
+        //Route::post('/{id}/posit', [PostController::class, 'changePosition']);
+    });
+
+
+    /*
+    | Image routes - Bilder
+    */
+
+    Route::group(['prefix' => 'image'], function () {
+        Route::post('/update/{id}', [ImageController::class, 'update']);
+    });
 
     /* 
     | Authentication routes

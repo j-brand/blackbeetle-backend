@@ -1,27 +1,40 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
-use App\Album;
-use Faker\Generator as Faker;
+use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Album::class, function (Faker $faker) {
+use App\Models\Album;
+use App\Models\Image;
 
-    $title_string = $faker->city();
+class AlbumFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Album::class;
 
-    return [
-        'title' => $title_string,
-        'title_image' => function () {
-            return factory(App\Image::class)->create([
-                'width' => '500',
-                'height' => '300',
-            ])->id;
-        },
-        'title_image_text' => $faker->realText(60),
-        'start_date' => $faker->dateTimeBetween($startDate = '-4 years', $endDate = '-3 years', $timezone = null, $format = 'Y-m-d'),
-        'end_date' => $faker->dateTimeBetween($startDate = '-2 years', $endDate = '-1 years', $timezone = null, $format = 'Y-m-d'),
-        'description' => $faker->realText(300),
-        'slug' => Str::kebab($title_string),
-        'active' => 1,
-    ];
-});
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        $title_string = $this->faker->city();
+
+        return [
+            'title' => $title_string,
+            'title_image' => Image::factory()->create(),
+            'title_image_text' => $this->faker->realText(60),
+            'start_date' => $this->faker->dateTimeBetween($startDate = '-4 years', $endDate = '-3 years', $timezone = null, $format = 'Y-m-d'),
+            'end_date' => $this->faker->dateTimeBetween($startDate = '-2 years', $endDate = '-1 years', $timezone = null, $format = 'Y-m-d'),
+            'description' => $this->faker->realText(300),
+            'slug' => Str::kebab($title_string),
+            'active' => 1,
+        ];
+    }
+}

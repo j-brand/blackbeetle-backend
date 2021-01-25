@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
 use Carbon\Carbon;
@@ -13,7 +14,7 @@ use App\Models\Image;
 
 class ImageController extends Controller
 {
-    
+
     private $sizes = array(
         0   =>  array('width' => 'null', 'height' => 'null', 'slug' => '',         'method' => false),
         1   =>  array('width' => 1400,   'height' => 'null', 'slug' => '_large',   'method' => false),
@@ -60,7 +61,7 @@ class ImageController extends Controller
         $path = storage_path('app/uploads/albums/' . $album_id . '/' . $image_name);
 
         if (\File::exists($path)) {
-            return \Image::make($path)->response();
+            return Image::make($path)->response();
         }
     }
 
@@ -72,14 +73,13 @@ class ImageController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->messages(), 400);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $image = Image::find($id);
+        $image->update($request->all());
 
-        $image->fill($request->all())->save();
-
-        return response()->json(['success' => true]);
+        return response()->json($image, 200);
     }
 
     /**
@@ -157,6 +157,7 @@ class ImageController extends Controller
         $imageObj->path         = $path;
         $imageObj->width        = $imageFile->width();
         $imageObj->height       = $imageFile->height();
+        $imageObj->description  = "";
         $imageObj->extension    = $extension;
         $imageObj->created_at   = Carbon::now();
         $imageObj->save();

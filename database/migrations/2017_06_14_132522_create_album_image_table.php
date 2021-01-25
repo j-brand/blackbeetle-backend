@@ -30,6 +30,6 @@ class CreateAlbumImageTable extends Migration
      */
     public function down()
     {
-               Schema::dropIfExists('album_image');
+        Schema::dropIfExists('album_image');
     }
 }

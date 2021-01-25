@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Album\AlbumChangeImagePosition;
+use App\Http\Requests\Album\AlbumStore;
+use App\Http\Requests\Album\AlbumUploadImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 use App\Models\Album;
 use App\Models\Image;
+use Illuminate\Support\Facades\Storage;
 
 class AlbumController extends Controller
 {
@@ -24,15 +28,6 @@ class AlbumController extends Controller
         return response()->json($albums);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.album.create');
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -40,27 +35,11 @@ class AlbumController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(AlbumStore $request)
     {
-
-        $validator = Validator::make($request->all(), [
-            'active'              => 'integer',
-            'title'               => 'required|unique:albums|string|max:255',
-            'start_date'          => 'required|date',
-            'end_date'            => 'required|date',
-            'description'         => 'string|max:1000',
-            'title_image_text'    => 'max:255',
-            'image_upload'        => 'required|mimes:jpeg,bmp,png,jpg,JPG|max:2500',
-        ]);
-
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
-        }
-
         $album = new album();
         $album->fill($request->except(['image_upload']));
-        $album->slug = Str::slug($request->get('title'));
+        $album->slug = Str::slug($request->title);
         $album->save();
 
         $album->path = 'albums/' . $album->id . '/';
@@ -105,20 +84,6 @@ class AlbumController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'active'              => 'integer',
-            'title'               => 'string|max:255',
-            'start_date'          => 'date|date_format:Y-m-d',
-            'end_date'            => 'date|date_format:Y-m-d',
-            'description'         => 'max:1000',
-            'title_image_text'    => 'max:255',
-            'image_upload'        => 'mimes:jpeg,bmp,png,jpg,JPG',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->messages(), 400);
-        }
-
         $album = Album::find($id);
         $sizeConf = 'album_title_image';
 
@@ -133,7 +98,7 @@ class AlbumController extends Controller
 
             $album->fill($request->except(['image_upload']))->save();
         } else {
-            $album->fill($request->all())->save();
+            $album->update($request->all());
         }
 
         $title_image = Image::where('id', $album->title_image)->first();
@@ -150,7 +115,7 @@ class AlbumController extends Controller
     public function destroy($id)
     {
         $album = Album::find($id);
-        $images = Album::find($id)->images()->get();
+        $album->images()->delete();
         $albumPath = $album->path;
 
         if ($album->delete()) {
@@ -159,15 +124,11 @@ class AlbumController extends Controller
         if (is_dir(public_path($albumPath))) {
             $folder_delete = rmdir(public_path($albumPath));
         }
-        return response()->json(['success' => true]);
+        return response()->json(true);
     }
 
-    public function upload(Request $request, $id)
+    public function upload(AlbumUploadImage $request, $id)
     {
-        request()->validate([
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp',
-        ]);
-
         $file = $request->file('file');
 
         $album = Album::find($id);
@@ -176,30 +137,16 @@ class AlbumController extends Controller
         $imageController = new ImageController();
         $image = $imageController->save($file, $album->path, $sizeConf);
 
-        $lastImage = $album->images->sortByDesc('position')->first();
-
-        $album->images()->attach($image->id, ['position' => $lastImage ? $lastImage->position + 1 : 0]);
+        $imageCount = $album->images->count();
+        $album->images()->attach($image->id, ['position' => $imageCount + 1]);
 
         return response()->json($image, 200);
     }
 
-    public function changeImagePosition(Request $request, $id)
+    public function changeImagePosition(AlbumChangeImagePosition $request, $id)
     {
-
-        $validator = Validator::make($request->all(), [
-            'image_one'            => 'required|integer',
-            'image_two'            => 'required|integer',
-            'posi_one'            => 'required|integer',
-            'posi_two'            => 'required|integer',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
-        }
-
         $album = Album::find($id);
-        $album->images()->updateExistingPivot($request->image_one, ['position' => $request->posi_one]);
-        $album->images()->updateExistingPivot($request->image_two, ['position' => $request->posi_two]);
-
+        $album->images()->updateExistingPivot($request->image_id, ['position' => $request->position]);
         return response()->json(['success' => true]);
     }
 
@@ -210,9 +157,7 @@ class AlbumController extends Controller
 
         $imageController->destroy($id, $sizeConf);
 
-        return response()->json([
-            'success' => 'true'
-        ]);
+        return response()->json(true);
     }
 
     public function generate($id)
