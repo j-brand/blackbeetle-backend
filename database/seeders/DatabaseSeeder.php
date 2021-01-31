@@ -37,7 +37,9 @@ class DatabaseSeeder extends Seeder
                     new Sequence(
                         ['type' => 'html'],
                         ['type' => 'image'],
-                        ['type' => 'map'],
+                        ['type' => 'map', 'content' => '{"coordinates":[{"id":"Neu Delhi","position":{"lat":28.61584308390754,"lng":77.21540990624999},"tmp":"4"},  				{"id":"\r\nAgra","position":{"lat":27.17399791074048,"lng":78.01741185937499},"tmp":"4"},
+                        {"id":"Jaipur","position":{"lat":26.914695040529676,"lng":75.79268041406249},"tmp":"4"}],
+                                    "zoomlevel":7,"connection":"0"}'],
                         ['type' => 'video']
                     )
                 )
