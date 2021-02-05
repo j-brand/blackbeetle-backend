@@ -133,9 +133,9 @@ class AlbumController extends Controller
 
         $album = Album::find($id);
         $sizeConf = "album_image";
-
         $imageController = new ImageController();
         $image = $imageController->save($file, $album->path, $sizeConf);
+
 
         $imageCount = $album->images->count();
         $album->images()->attach($image->id, ['position' => $imageCount + 1]);

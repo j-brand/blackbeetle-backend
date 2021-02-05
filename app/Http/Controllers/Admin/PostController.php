@@ -6,11 +6,10 @@ use Pion\Laravel\ChunkUpload\Exceptions\UploadMissingFileException;
 use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
 
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Auth;
 use Illuminate\Http\Request;
-use App\Http\Requests\StoreBlogPost;
-use App\Http\Requests\UpdateBlogPost;
 use Illuminate\Http\UploadedFile;
 
 use App\Http\Controllers\Admin\ImageController;
@@ -92,18 +91,6 @@ class PostController extends Controller
         $post->date = date('Y-m-d');
         $post->save();
 
-        if ($validated['type'] === 'video') {
-
-            $content = json_decode($validated['content']);
-
-            $path =  'stories/' . $validated['story_id'] . '/posts/' . $post->id;
-            Storage::move('public/temp/' . $content->name, 'public/' . $path . '/' . $content->name);
-
-            $content->path = $path;
-            $post->content = json_encode($content);
-            $post->save();
-        }
-
         return response()->json($post, 200);
     }
 
@@ -181,11 +168,15 @@ class PostController extends Controller
     public function destroy($id)
     {
         $post = Post::find($id);
-        if (Storage::disk('local')->exists('public/stories/' . $post->story_id . '/' . $post->id)) {
-            Storage::deleteDirectory('public/stories/' . $post->story_id . '/' . $post->id);
+
+        $postFolder = "public/{$post->story['path']}{$post->id}";
+
+        if (Storage::exists($postFolder)) {
+            Storage::deleteDirectory($postFolder);
         }
+
         $post->delete();
-        return response()->json(['success' => true, 'message' => 'Beitrag wurde gelöscht.']);
+        return response()->json(true);
     }
 
     public function uploadImage(BlogPostUploadImage $request, $id)
@@ -195,8 +186,7 @@ class PostController extends Controller
 
         $post = Post::find($id);
         $sizeConf = "image_post";
-        $path = $post->story()->value('path') . $post->id . '/';
-
+        $path = "{$post->story['path']}{$post->id}/";
 
         $imageController = new ImageController();
         $image = $imageController->save($file, $path, $sizeConf);
@@ -210,50 +200,55 @@ class PostController extends Controller
         return response()->json($image, 200);
     }
 
-    /**
-     * Handles the file upload
-     *
-     * @param FileReceiver $receiver
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @throws UploadMissingFileException
-     *
-     */
-    public function uploadVideo(FileReceiver $receiver)
+    public function uploadVideo(Request $request, $id)
     {
-        // check if the upload is success, throw exception or return response you need
-        if ($receiver->isUploaded() === false) {
-            throw new UploadMissingFileException();
+
+        $post = Post::find($id);
+        $file = $request->file('file');
+
+        $path = Storage::disk('local')->path("chunks/{$file->getClientOriginalName()}");
+
+        File::append($path, $file->get());
+
+        if ($request->has('is_last') && $request->boolean('is_last')) {
+            $name = basename($path, '.part');
+            $publicPath = "{$post->story['path']}{$post->id}";
+            $storagePath = 'public/' . $publicPath;
+
+            if (!Storage::exists($storagePath)) {
+                Storage::makeDirectory($storagePath);
+            }
+
+
+            File::move($path,  Storage::disk('local')->path($storagePath . '/' . $name));
+
+            $video = array(
+                'path' => 'storage/' . $publicPath,
+                'filename' => $name
+            );
+            $post->content = json_encode($video);
+            $post->save();
+
+            return response()->json($post);
         }
-        // receive the file
-        $save = $receiver->receive();
-
-        // check if the upload has finished (in chunk mode it will send smaller files)
-        if ($save->isFinished()) {
-            $file = $save->getFile();
-            $mime = $file->getMimeType();
-
-            // save the file and return any response you need
-            $fileName = $this->createFilename($file);
-            $finalPath = storage_path("app/public/temp");
-
-            $file->move($finalPath, $fileName);
 
 
-            return response()->json([
-                'path' => 'temp',
-                'name' => $fileName,
-                'mime_type' => $mime
-            ]);
+        return response()->json(['uploaded' => true]);
+    }
+
+    public function deleteVideo(Request $request, $id)
+    {
+        $post = Post::find($id);
+        $postContent = json_decode($post->content);
+
+        $filePath = $postContent->path . '/' . $postContent->filename;
+        if (File::exists($filePath)) {
+            File::delete($filePath);
+            $post->content = '';
+            $post->save();
+            return response()->json(true);
         }
-
-        // we are in chunk mode, lets send the current progress
-        /** @var AbstractHandler $handler */
-        $handler = $save->handler();
-        return response()->json([
-            "done" => $handler->getPercentageDone()
-        ]);
+        return response()->json(['message' => 'file not found', 'path' => $filePath]);
     }
 
 

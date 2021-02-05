@@ -25,7 +25,7 @@ class ImageFactory extends Factory
         return [
             'title' => 'dummy_01',
             'description' => 'Test Image',
-            'path' => 'static/test/',
+            'path' => 'static/dummy/',
             'extension' => 'jpg',
             'file_size' => null,
             'height' => null,

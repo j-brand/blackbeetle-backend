@@ -72,12 +72,14 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     | Post routes - Beiträge
     */
     Route::group(['prefix' => 'post'], function () {
-       // Route::get('/', [PostController::class, 'index']);
+        // Route::get('/', [PostController::class, 'index']);
         Route::get('/{id}', [PostController::class, 'edit']);
         Route::post('/create', [PostController::class, 'store']);
         Route::post('/update/{id}', [PostController::class, 'update']);
         Route::delete('/{id}', [PostController::class, 'destroy']);
         Route::post('/upload/{id}', [PostController::class, 'uploadImage']);
+        Route::post('/uploadvideo/{id}', [PostController::class, 'uploadVideo']);
+        Route::delete('/video/{id}', [PostController::class, 'deleteVideo']);
         Route::post('/{id}/position', [PostController::class, 'changeImagePosition']);
 
         //Route::post('/{id}/posit', [PostController::class, 'changePosition']);

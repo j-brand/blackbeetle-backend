@@ -27,14 +27,15 @@ class AlbumFactory extends Factory
         $title_string = $this->faker->city();
 
         return [
-            'title' => $title_string,
-            'title_image' => Image::factory()->create(),
-            'title_image_text' => $this->faker->realText(60),
-            'start_date' => $this->faker->dateTimeBetween($startDate = '-4 years', $endDate = '-3 years', $timezone = null, $format = 'Y-m-d'),
-            'end_date' => $this->faker->dateTimeBetween($startDate = '-2 years', $endDate = '-1 years', $timezone = null, $format = 'Y-m-d'),
-            'description' => $this->faker->realText(300),
-            'slug' => Str::kebab($title_string),
-            'active' => 1,
+            'title'             => $title_string,
+            'title_image'       => Image::factory()->create(),
+            'title_image_text'  => $this->faker->realText(60),
+            'start_date'        => $this->faker->dateTimeBetween($startDate = '-4 years', $endDate = '-3 years', $timezone = null, $format = 'Y-m-d'),
+            'end_date'          => $this->faker->dateTimeBetween($startDate = '-2 years', $endDate = '-1 years', $timezone = null, $format = 'Y-m-d'),
+            'description'       => $this->faker->realText(300),
+            'path'              => "albums/{$this->faker->unique()->randomDigit()}/",
+            'slug'              => Str::kebab($title_string),
+            'active'            => 1,
         ];
     }
 }
