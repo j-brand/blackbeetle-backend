@@ -15,8 +15,8 @@ class OptionsTableSeeder extends Seeder
     public function run()
     {
         DB::table('options')->insert([
-            'id'        => 1,
-            'option'    => '-29.594980, 135.728591|Hier sind wir !|Australien',
+            'option'    => 'my_location',
+            'content'   => '{"position":{"lat":-29.594980,"lng":135.728591},"info":"Australien"}',
         ]);
     }
 }

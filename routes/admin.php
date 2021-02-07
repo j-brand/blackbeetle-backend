@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\StoryController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -93,6 +94,17 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::group(['prefix' => 'image'], function () {
         Route::post('/update/{id}', [ImageController::class, 'update']);
     });
+
+    /*
+    | Options routes - Optionen
+    */
+
+    Route::group(['prefix' => 'option'], function () {
+        Route::get('/{option}', [AdminController::class, 'getOption']);
+        Route::post('/', [AdminController::class, 'updateOption']);
+    });
+
+
 
     /* 
     | Authentication routes

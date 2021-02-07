@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\User;
 use App\Story;
 use App\Album;
+use App\Http\Requests\Admin\GetOption;
+use App\Http\Requests\Admin\UpdateOption;
 use App\Post;
 
 use DB;
@@ -119,5 +121,22 @@ class AdminController extends Controller
                 'success' => true,
             ], 200);
         }
+    }
+
+    public function getOption($optionName)
+    {
+        $option = DB::table('options')->select('option', 'content')
+            ->where('option', $optionName)
+            ->first();
+        return response()->json($option);
+    }
+
+    public function updateOption(UpdateOption $request)
+    {
+        $option = tap(DB::table('options')->where('option', $request->option))
+            ->update(['content' => $request->content])
+            ->first();
+
+        return response()->json($option);
     }
 }
