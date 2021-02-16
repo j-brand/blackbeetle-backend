@@ -41,6 +41,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     */
     Route::group(['prefix' => 'user'], function () {
         Route::get('/', [UserController::class, 'index']);
+        Route::get('/{id}', [UserController::class, 'edit']);
+        Route::post('/{id}', [UserController::class, 'update']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::delete('/{id}', [UserController::class, 'destroy']);
+        Route::get('/sendverification/{id}', [UserController::class, 'sendVerification']);
     });
 
     /*
@@ -93,6 +98,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::group(['prefix' => 'image'], function () {
         Route::post('/update/{id}', [ImageController::class, 'update']);
+        Route::delete('/{id}', [ImageController::class, 'destroy']);
     });
 
     /*
@@ -104,6 +110,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/', [AdminController::class, 'updateOption']);
     });
 
+
+    /*
+    | Misc routes - Verschiedenes
+    */
+
+    Route::get('dashboard', [AdminController::class, 'getDashboard']);
 
 
     /* 

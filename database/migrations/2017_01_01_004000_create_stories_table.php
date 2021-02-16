@@ -14,16 +14,14 @@ class CreateStoriesTable extends Migration
     public function up()
     {
         Schema::create('stories', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('title_image')->unsigned()->default(1);
-            $table->string('title',100);
+            $table->id();
+            $table->foreignId('title_image')->constrained('images')->default(1);
+            $table->string('title', 100);
             $table->text('description')->nullable();
-            $table->string('path',255)->nullable();
-            $table->string('slug',255);
+            $table->string('path', 255)->nullable();
+            $table->string('slug', 255);
             $table->boolean('active')->default(0);
             $table->timestamps();
-
-            $table->foreign('title_image')->references('id')->on('images');
         });
     }
 

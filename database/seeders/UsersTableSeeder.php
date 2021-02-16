@@ -27,7 +27,7 @@ class UsersTableSeeder extends Seeder
         $user->id = 1;
         $user->name = 'Johannes';
         $user->email = 'johbra90@googlemail.com';
-        $user->verified = 1;
+        $user->email_verified_at = now();
         $user->active = 1;
         $user->password = bcrypt('secret');
         $user->save();
@@ -37,7 +37,7 @@ class UsersTableSeeder extends Seeder
         $user->id = 69;
         $user->name = 'postman';
         $user->email = 'postman@blackbeetle.de';
-        $user->verified = 1;
+        $user->email_verified_at = now();
         $user->active = 0;
         $user->password = bcrypt('secret');
         $user->save();
@@ -46,7 +46,7 @@ class UsersTableSeeder extends Seeder
         $user->id = 33;
         $user->name = 'gast';
         $user->email = 'gast@blackbeetle.de';
-        $user->verified = 0;
+        $user->email_verified_at = now();
         $user->active = 0;
         $user->password = bcrypt('secret');
         $user->save();

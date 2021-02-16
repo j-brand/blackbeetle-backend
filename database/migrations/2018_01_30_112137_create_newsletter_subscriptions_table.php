@@ -14,16 +14,13 @@ class CreateNewsletterSubscriptionsTable extends Migration
     public function up()
     {
         Schema::create('newsletter_subscriptions', function (Blueprint $table) {
-            $table->increments('id');
+            $table->id();
             $table->string('name');
-            $table->string('email');
-            $table->tinyInteger('verified')->default(0);
-            $table->integer('story_id')->unsigned();
-            $table->string('email_token')->nullable();
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->foreignId('story_id')->constrained()->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
-
-            $table->foreign('story_id')->references('id')->on('stories')->onDelete('cascade');
         });
     }
 

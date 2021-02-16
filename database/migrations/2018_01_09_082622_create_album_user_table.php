@@ -14,11 +14,8 @@ class CreateAlbumUserTable extends Migration
     public function up()
     {
         Schema::create('album_user', function (Blueprint $table) {
-            $table->integer('user_id')->unsigned();
-            $table->integer('album_id')->unsigned();
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('album_id')->references('id')->on('albums')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('album_id')->constrained()->onDelete('cascade');
         });
     }
 

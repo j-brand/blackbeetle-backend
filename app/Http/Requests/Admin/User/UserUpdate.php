@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Post;
+namespace App\Http\Requests\Admin\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Models\User;
 
-class BlogPostChangeImagePosition extends FormRequest
+class UserUpdate extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +26,9 @@ class BlogPostChangeImagePosition extends FormRequest
     public function rules()
     {
         return [
-            'image_id'            => 'required|integer',
-            'position'            => 'required|integer',
+            'name'      => 'required|string',
+            'email'     => ['required', 'email', Rule::unique('users')->ignore(User::find($this->id)->id)],
+            'active'    => 'integer',
         ];
     }
 }

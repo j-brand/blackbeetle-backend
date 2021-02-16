@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Album;
+namespace App\Http\Requests\Admin\Album;
 
 use Illuminate\Foundation\Http\FormRequest;
 

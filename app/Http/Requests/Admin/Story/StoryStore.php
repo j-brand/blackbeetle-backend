@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Album;
+namespace App\Http\Requests\Admin\Story;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AlbumUpdate extends FormRequest
+class StoryStore extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,12 +25,10 @@ class AlbumUpdate extends FormRequest
     {
         return [
             'active'              => 'integer',
-            'title'               => 'string|max:255',
-            'start_date'          => 'date|date_format:Y-m-d',
-            'end_date'            => 'date|date_format:Y-m-d',
-            'description'         => 'max:1000',
-            'title_image_text'    => 'max:255',
-            'image_upload'        => 'mimes:jpeg,bmp,png,jpg,JPG',
+            'slug'                => 'required|unique:stories|string|max:255',
+            'title'               => 'required|unique:stories|string|max:255',
+            'description'         => 'string|max:1000',
+            'image_upload'        => 'required|mimes:jpeg,bmp,png,jpg,JPG|max:2500',
         ];
     }
 }

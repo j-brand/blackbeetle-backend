@@ -14,12 +14,9 @@ class CreateAlbumImageTable extends Migration
     public function up()
     {
         Schema::create('album_image', function (Blueprint $table) {
-            $table->integer('image_id')->unsigned();
-            $table->integer('album_id')->unsigned();
+            $table->foreignId('album_id')->constrained()->onDelete('cascade');
+            $table->foreignId('image_id')->constrained()->onDelete('cascade');
             $table->integer('position')->nullable();
-
-            $table->foreign('image_id')->references('id')->on('images')->onDelete('cascade');
-            $table->foreign('album_id')->references('id')->on('albums')->onDelete('cascade');
         });
     }
 

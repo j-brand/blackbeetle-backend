@@ -11,13 +11,11 @@ class CreateImageStoryTable extends Migration
      *
      * @return void
      */
-    public function up(){
+    public function up()
+    {
         Schema::create('image_story', function (Blueprint $table) {
-            $table->integer('story_id')->unsigned();
-            $table->integer('image_id')->unsigned();
-
-            $table->foreign('story_id')->references('id')->on('stories');
-            $table->foreign('image_id')->references('id')->on('images');
+            $table->foreignId('story_id')->constrained();
+            $table->foreignId('image_id')->constrained();
         });
     }
 
@@ -28,6 +26,6 @@ class CreateImageStoryTable extends Migration
      */
     public function down()
     {
-                Schema::dropIfExists('image_story');
+        Schema::dropIfExists('image_story');
     }
 }

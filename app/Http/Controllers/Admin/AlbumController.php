@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Album\AlbumChangeImagePosition;
-use App\Http\Requests\Album\AlbumStore;
-use App\Http\Requests\Album\AlbumUploadImage;
+use App\Http\Requests\Admin\Album\AlbumChangeImagePosition;
+use App\Http\Requests\Admin\Album\AlbumStore;
+use App\Http\Requests\Admin\Album\AlbumUploadImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;

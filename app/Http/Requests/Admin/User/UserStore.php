@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Post;
+namespace App\Http\Requests\Admin\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class BlogPostUpdate extends FormRequest
+class UserStore extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,11 +24,11 @@ class BlogPostUpdate extends FormRequest
     public function rules()
     {
         return [
-            'active'   => 'integer',
-            'date'     => 'date',
-            'title'    => 'max:255',
-            'content'  => '',
-            'position' => 'integer'
+            'name'      => 'required|string',
+            'email'     => 'required|unique:users|email',
+            'password'  => 'string',
+            'active'    => 'integer',
+            'verified'  => 'integer',
         ];
     }
 }

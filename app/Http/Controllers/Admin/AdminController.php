@@ -4,12 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\NewStoryPost;
-use Illuminate\Http\Request;
-
 use App\User;
-use App\Story;
-use App\Album;
-use App\Http\Requests\Admin\GetOption;
+use App\Models\Story;
+use App\Models\Album;
 use App\Http\Requests\Admin\UpdateOption;
 use App\Post;
 
@@ -52,8 +49,18 @@ class AdminController extends Controller
         return view('admin.index', compact('users', 'stories', 'albums', 'imagesCount', 'postCount', 'coords'));
     }
 
+    public function getDashboard()
+    {
+        $data = array(
+            'stories'   => Story::orderBy('created_at', 'DESC')->withCount('posts')->get(),
+            'albums'    => Album::orderBy('created_at', 'DESC')->withCount('images')->get(),
+        );
 
-    public function playground()
+        return response()->json($data);
+    }
+
+
+    /*     public function playground()
     {
         return view('admin.playground');
     }
@@ -72,7 +79,7 @@ class AdminController extends Controller
     public function anim()
     {
         return view('admin.playground.anim');
-    }
+    } */
 
     public function mailTheCrowd($id)
     {
@@ -92,7 +99,7 @@ class AdminController extends Controller
         ], 200);
     }
 
-    public function setCoords(Request $request)
+    /*     public function setCoords(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'coords'        => 'required|string',
@@ -121,7 +128,7 @@ class AdminController extends Controller
                 'success' => true,
             ], 200);
         }
-    }
+    } */
 
     public function getOption($optionName)
     {

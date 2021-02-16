@@ -13,11 +13,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
 use App\Http\Controllers\Admin\ImageController;
-use App\Http\Requests\Post\BlogPostUpdate;
-use App\Http\Requests\Post\BlogPostStore;
-use App\Http\Requests\Post\BlogPostUploadImage;
+use App\Http\Requests\Admin\Post\BlogPostUpdate;
+use App\Http\Requests\Admin\Post\BlogPostStore;
+use App\Http\Requests\Admin\Post\BlogPostUploadImage;
 use App\Jobs\GenerateImageVersions;
 use Validator;
+use Illuminate\Support\Arr;
 
 use App\Models\Post;
 use App\Story;
@@ -27,50 +28,6 @@ use function Psy\debug;
 
 class PostController extends Controller
 {
-
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $posts = Post::all();
-        return view('admin.post.index')->with('posts', $posts);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function select($storyID)
-    {
-        return view('admin.post.select', compact('storyID'));
-    }
-
-    public function create(Request $request, $storyID, $typ)
-    {
-
-        switch ($typ) {
-            case 'html':
-                return view('admin.post.create.html', compact('storyID'));
-                break;
-            case 'image':
-                return view('admin.post.create.image', compact('storyID'));
-                break;
-            case 'map':
-                return view('admin.post.create.map', compact('storyID'));
-                break;
-            case 'video':
-                return view('admin.post.create.video', compact('storyID'));
-                break;
-            default:
-                return response()->json(['success' => false]);
-                break;
-        }
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -138,7 +95,7 @@ class PostController extends Controller
 
         if ($post->type === 'video' && sizeof($validated) > 1) {
 
-            $post->fill($request->except(['content']));
+            $post->fill(Arr::except($validated, ['content']));
 
             $content = json_decode($validated['content']);
 

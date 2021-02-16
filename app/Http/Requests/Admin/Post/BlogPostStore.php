@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Post;
+namespace App\Http\Requests\Admin\Post;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\Posttype;
 
-class BlogPostUploadImage extends FormRequest
+class BlogPostStore extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +25,11 @@ class BlogPostUploadImage extends FormRequest
     public function rules()
     {
         return [
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'active'  => 'integer',
+            'title'   => 'unique:posts|max:255',
+            'content' => 'text',
+            'story_id' => 'required|exists:stories,id',
+            'type'    => ['required', new Posttype],
         ];
     }
 }

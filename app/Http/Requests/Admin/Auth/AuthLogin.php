@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Post;
+namespace App\Http\Requests\Admin\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\Posttype;
 
-class BlogPostStore extends FormRequest
+class AuthLogin extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,11 +24,8 @@ class BlogPostStore extends FormRequest
     public function rules()
     {
         return [
-            'active'  => 'integer',
-            'title'   => 'unique:posts|max:255',
-            'content' => 'text',
-            'story_id' => 'required|exists:stories,id',
-            'type'    => ['required', new Posttype],
+            'email' => 'required|email',
+            'password' => 'required|string',
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Auth\AuthLogin;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -11,23 +12,19 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function  authenticate(Request $request){
-    	$validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-            
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
+    public function  authenticate(AuthLogin $request)
+    {
+        $validated = $request->validated();
 
-        if (!  auth()->attempt($validator->validated())) {
+        if (!auth()->attempt($validated)) {
             return response()->json(['message' => 'So nicht du Trottel!'], 403);
         }
 
+        if (!Auth::user()->active) {
+            return response()->json(['message' => 'Dein Account ist noch nicht freigeschaltet.'], 403);
+        }
+
         return Auth::user();
-
-
     }
 
     public function logout()

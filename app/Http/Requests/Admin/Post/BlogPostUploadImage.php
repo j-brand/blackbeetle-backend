@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Album;
+namespace App\Http\Requests\Admin\Post;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AlbumChangeImagePosition extends FormRequest
+class BlogPostUploadImage extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +24,7 @@ class AlbumChangeImagePosition extends FormRequest
     public function rules()
     {
         return [
-            'image_id'            => 'required|integer',
-            'position'            => 'required|integer',
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif',
         ];
     }
 }

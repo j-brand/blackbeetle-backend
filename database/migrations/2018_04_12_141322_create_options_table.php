@@ -14,7 +14,7 @@ class CreateOptionsTable extends Migration
     public function up()
     {
         Schema::create('options', function (Blueprint $table) {
-            $table->increments('id');
+            $table->id();
             $table->string('option');
         });
     }

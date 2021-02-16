@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\Admin\ImageController;
+use App\Http\Requests\Admin\Story\StoryStore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Log;
+use Illuminate\Support\Arr;
 
 use App\Models\Story;
 use App\Models\Image;
@@ -35,28 +36,13 @@ class StoryController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoryStore $request)
     {
 
-        $validator = Validator::make($request->all(), [
-            'active'              => 'integer',
-            'slug'                => 'required|unique:stories|string|max:255',
-            'title'               => 'required|unique:stories|string|max:255',
-            'description'         => 'string|max:1000',
-            'image_upload'        => 'required|mimes:jpeg,bmp,png,jpg,JPG|max:2500',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
+        $validated = $request->validated();
 
         $story = new story();
-        $story->fill($request->except(['image_upload']));
-        $story->slug = Str::slug($request->title);
-        $story->save();
 
-        $story->path = 'stories/' . $story->id . '/';
         $sizeConf = "story_title_image";
 
         if ($request->hasFile('image_upload')) {
@@ -69,6 +55,11 @@ class StoryController extends Controller
             $story->title_image = 1;
         }
 
+
+
+        $story->fill(Arr::except($validated, ['image_upload']));
+        $story->slug = Str::slug($request->title);
+        $story->path = 'stories/' . $story->id . '/';
         $story->save();
 
         return response()->json($story);

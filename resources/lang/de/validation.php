@@ -132,7 +132,7 @@ return [
 
     'custom' => [
         'attribute-name' => [
-            'rule-name' => 'custom-message',
+            'email' => 'custom-message',
         ],
     ],
 
@@ -147,6 +147,6 @@ return [
     |
     */
 
-    'attributes' => ['title' => 'Titel', 'slug' => 'Slug'],
+    'attributes' => ['title' => 'Titel', 'slug' => 'Slug','email'=>'E-Mail-Adresse'],
 
 ];
