@@ -136,6 +136,7 @@ trait ImageTrait
             Storage::put($filePath, $newImage->encode());
             Storage::put($filePathLazy, $this->generateLazy($newImage)->encode());
         }
+        
 
         return Image::create([
             'title'         => $filename,
