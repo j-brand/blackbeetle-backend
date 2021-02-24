@@ -4,11 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Auth\AuthLogin;
-use Illuminate\Http\Request;
-use Validator;
 
-use Illuminate\Support\Facades\Auth;
-
+use Auth;
 
 class AuthController extends Controller
 {

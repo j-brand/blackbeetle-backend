@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Auth\Events\Registered;
 use App\Http\Controllers\Controller;
+
+use Illuminate\Auth\Events\Registered;
+
 use App\Http\Requests\Admin\User\UserStore;
 use App\Http\Requests\Admin\User\UserUpdate;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Arr;
 
+use Hash;
+use Arr;
 
 use App\Models\User;
 
@@ -20,7 +22,7 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    public function edit($id)
+    public function get($id)
     {
         $user = User::find($id);
         return response()->json($user);

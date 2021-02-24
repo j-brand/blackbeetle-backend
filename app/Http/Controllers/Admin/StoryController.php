@@ -3,20 +3,22 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 
-use App\Http\Controllers\Admin\ImageController;
+use Storage;
+use Str;
+use Arr;
+
+use App\Http\Traits\ImageTrait;
+
 use App\Http\Requests\Admin\Story\StoryStore;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Arr;
-
+use App\Http\Requests\Admin\Story\StoryUpdate;
 use App\Models\Story;
 use App\Models\Image;
-use Illuminate\Support\Str;
 
 class StoryController extends Controller
 {
+
+    use ImageTrait;
 
     /**
      * Display a listing of the resource.
@@ -42,24 +44,16 @@ class StoryController extends Controller
         $validated = $request->validated();
 
         $story = new story();
-
-        $sizeConf = "story_title_image";
-
-        if ($request->hasFile('image_upload')) {
-            $file = $request->file('image_upload');
-
-            $imageController = new ImageController();
-            $response = $imageController->save($file, $story->path, $sizeConf);
-            $story->title_image = $response->id;
-        } else {
-            $story->title_image = 1;
-        }
-
-
-
         $story->fill(Arr::except($validated, ['image_upload']));
-        $story->slug = Str::slug($request->title);
+        $story->slug = Str::slug($validated['title']);
+        $story->title_image = 1;
+        $story->save();
+
         $story->path = 'stories/' . $story->id . '/';
+        $sizeConf = "story_title_image";
+        $newImage = $this->saveImage($validated['image_upload'], $story->path, $sizeConf);
+
+        $story->title_image = $newImage->id;
         $story->save();
 
         return response()->json($story);
@@ -71,13 +65,9 @@ class StoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function get($id)
     {
-
-        $story = Story::with('posts')->where('id', $id)->first();
-        $title_image = Image::where('id', $story->title_image)->first();
-        $story->title_image = $title_image;
-
+        $story = Story::with(['posts', 'title_image'])->where('id', $id)->first();
         return response()->json($story);
     }
 
@@ -88,40 +78,23 @@ class StoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(StoryUpdate $request, $id)
     {
-
-        $validator = Validator::make($request->all(), [
-            'active'              => 'integer',
-            'title'               => 'unique:albums|string|max:255',
-            'slug'                => 'unique:albums|string|max:255',
-            'description'         => 'max:1000',
-            'image_upload'        => 'mimes:jpeg,bmp,png,jpg,JPG',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
+        $validated = $request->validated();
 
         $story = Story::find($id);
-        $sizeConf = "story_title_image";
 
-
-        if ($request->hasFile('image_upload')) {
-            $file = $request->file('image_upload');
-
-            $imageController = new ImageController();
-            $response = $imageController->save($file, $story->path, $sizeConf);
-            $request->merge(['title_image' => $response->id]);
-
-
-            $story->fill($request->except(['image_upload']))->save();
-            return response()->json(['success' => true, 'imgData' => $response]);
-        } else {
-            $story->fill($request->except(['image_upload']))->save();
+        if (Arr::exists($validated, 'image_upload')) {
+            $sizeConf = "story_title_image";
+            $newImage = $this->saveImage($validated['image_upload'], $story->path, $sizeConf);
+            $validated = Arr::add($validated, 'title_image', $newImage->id);
+            $this->deleteImageFile($story->title_image);
         }
-        return response()->json(['success' => true]);
+
+        $story->update(Arr::except($validated, 'image_upload'));
+
+        $story = Story::with(['posts', 'title_image'])->where('id', $id)->first();
+        return response()->json($story);
     }
 
     /**

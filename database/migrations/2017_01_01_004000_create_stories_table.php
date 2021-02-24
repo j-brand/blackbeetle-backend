@@ -15,13 +15,14 @@ class CreateStoriesTable extends Migration
     {
         Schema::create('stories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('title_image')->constrained('images')->default(1);
+            $table->foreignId('title_image')->constrained('images')->nullable();
             $table->string('title', 100);
             $table->text('description')->nullable();
             $table->string('path', 255)->nullable();
             $table->string('slug', 255);
             $table->boolean('active')->default(0);
             $table->timestamps();
+            
         });
     }
 

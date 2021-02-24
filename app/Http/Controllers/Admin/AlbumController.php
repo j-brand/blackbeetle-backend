@@ -3,22 +3,26 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Storage;
+use Str;
+use Arr;
+
+use App\Http\Traits\ImageTrait;
+
 use App\Http\Requests\Admin\Album\AlbumChangeImagePosition;
 use App\Http\Requests\Admin\Album\AlbumStore;
+use App\Http\Requests\Admin\Album\AlbumUpdate;
 use App\Http\Requests\Admin\Album\AlbumUploadImage;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 use App\Models\Album;
 use App\Models\Image;
-use Illuminate\Support\Facades\Storage;
 
 class AlbumController extends Controller
 {
+    use ImageTrait;
 
     /**
-     * Display a listing of the resource. 
+     * Retruns all albums with images count
      *
      * @return \Illuminate\Http\Response
      */
@@ -28,89 +32,80 @@ class AlbumController extends Controller
         return response()->json($albums);
     }
 
-
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Stores a album in the database
+     * 
+     * @param App\Http\Request\Admin\Album\AlbumStore $request
+     * 
+     * @return json return the created album resource
      */
     public function store(AlbumStore $request)
     {
+
+        $validated = $request->validated();
+
         $album = new album();
-        $album->fill($request->except(['image_upload']));
-        $album->slug = Str::slug($request->title);
+        $album->fill(Arr::except($validated, ['image_upload']));
+        $album->slug = Str::slug($validated['title']);
         $album->save();
 
         $album->path = 'albums/' . $album->id . '/';
 
-        $sizeConf = 'album_title_image';
+        //create & save cover image and al variants
+        $newImage = $this->saveImage($validated['image_upload'], $album->path, 'album_title_image');
 
-        if ($request->hasFile('image_upload')) {
-            $file = $request->file('image_upload');
-
-            $imageController = new ImageController();
-            $response = $imageController->save($file, $album->path, $sizeConf);
-            $album->title_image = $response->id;
-        } else {
-            $album->title_image = 1;
-        }
+        $album->title_image = $newImage->id;
         $album->save();
-        return response()->json($album);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-
-        $album = Album::with('images')->where('id', $id)->first();
-        $title_image = Image::where('id', $album->title_image)->first();
-        $album->title_image = $title_image;
 
         return response()->json($album);
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Searches for a album (by ID) and returns it with all images
+     * 
+     * @param int $id   -   Album ID
+     * 
+     * @return json return the album resource
      */
-    public function update(Request $request, $id)
+    public function get($id)
     {
+        $album = Album::with(['images', 'title_image'])->where('id', $id)->first();
+        return response()->json($album);
+    }
+
+    /**
+     * Update the album resource and create/save new title image if needed
+     * 
+     * @param App\Http\Request\Admin\Album\AlbumUpdate $request
+     * @param int $id   -   Album ID
+     * 
+     * @return json return the updated album resource
+     */
+    public function update(AlbumUpdate $request, $id)
+    {
+
+        $validated = $request->validated();
+
         $album = Album::find($id);
-        $sizeConf = 'album_title_image';
+        
+        if (Arr::exists($validated, 'image_upload')) {
+            $newImage = $this->saveImage($validated['image_upload'], $album->path, 'album_title_image');
+            $validated = Arr::add($validated, 'title_image', $newImage->id);
+            $this->deleteImageFile($album->title_image);
+            $album->title_image = $newImage->id;
 
-
-        if ($request->hasFile('image_upload')) {
-            $file = $request->file('image_upload');
-
-            $imageController = new ImageController();
-            $response = $imageController->save($file, $album->path, $sizeConf);
-            $request->merge(['title_image' => $response->id]);
-            $album->title_image = $response->id;
-
-            $album->fill($request->except(['image_upload']))->save();
-        } else {
-            $album->update($request->all());
         }
-
-        $title_image = Image::where('id', $album->title_image)->first();
-        $album->title_image = $title_image;
+        $album->update(Arr::except($validated, 'image_upload'));
+        
+        $album = Album::with(['images', 'title_image'])->where('id', $id)->first();
         return response()->json($album, 200);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the album nad all image resources from storage & database.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return boolean
      */
     public function destroy($id)
     {
@@ -120,21 +115,30 @@ class AlbumController extends Controller
 
         if ($album->delete()) {
             Storage::deleteDirectory('public/' . $albumPath);
-        }
-        if (is_dir(public_path($albumPath))) {
-            $folder_delete = rmdir(public_path($albumPath));
+            if (is_dir(public_path($albumPath))) {
+                $folder_delete = rmdir(public_path($albumPath));
+            }
         }
         return response()->json(true);
     }
 
+    /**
+     * Upload/Save image to given album
+     * 
+     * @param App\Http\Request\Admin\Album\AlbumUploadImage $request
+     * @param int $id   -   Album ID
+     * 
+     * @return json - uploaded image resource
+     */
     public function upload(AlbumUploadImage $request, $id)
     {
-        $file = $request->file('file');
+        $validated = $request->validated();
+
 
         $album = Album::find($id);
         $sizeConf = "album_image";
         $imageController = new ImageController();
-        $image = $imageController->save($file, $album->path, $sizeConf);
+        $image = $imageController->save($validated['file'], $album->path, $sizeConf);
 
 
         $imageCount = $album->images->count();
@@ -143,24 +147,25 @@ class AlbumController extends Controller
         return response()->json($image, 200);
     }
 
+
+    /**
+     * Change the position of an image
+     * 
+     * @param App\Http\Request\Admin\Album\AlbumChangeImagePosition $request
+     * @param int $id   -   Album ID
+     * 
+     * @return boolean
+     */
     public function changeImagePosition(AlbumChangeImagePosition $request, $id)
     {
+        $validated = $request->validated();
+
         $album = Album::find($id);
-        $album->images()->updateExistingPivot($request->image_id, ['position' => $request->position]);
+        $album->images()->updateExistingPivot($validated['image_id'], ['position' => $validated['position']]);
         return response()->json(['success' => true]);
     }
 
-    public function deleteImage($id)
-    {
-        $imageController = new ImageController();
-        $sizeConf = "album_image";
-
-        $imageController->destroy($id, $sizeConf);
-
-        return response()->json(true);
-    }
-
-    public function generate($id)
+    /*     public function generate($id)
     {
         $album = Album::find($id);
         if (!$album) {
@@ -181,5 +186,5 @@ class AlbumController extends Controller
         return response()->json([
             'message' => $message
         ]);
-    }
+    } */
 }

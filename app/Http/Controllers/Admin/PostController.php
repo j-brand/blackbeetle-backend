@@ -2,38 +2,32 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Pion\Laravel\ChunkUpload\Exceptions\UploadMissingFileException;
-use Pion\Laravel\ChunkUpload\Receiver\FileReceiver;
-
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 
-use App\Http\Controllers\Admin\ImageController;
+use Arr;
+use File;
+use Storage;
+
+use App\Models\Post;
+
+use App\Http\Traits\ImageTrait;
+
 use App\Http\Requests\Admin\Post\BlogPostUpdate;
 use App\Http\Requests\Admin\Post\BlogPostStore;
 use App\Http\Requests\Admin\Post\BlogPostUploadImage;
-use App\Jobs\GenerateImageVersions;
-use Validator;
-use Illuminate\Support\Arr;
-
-use App\Models\Post;
-use App\Story;
-use App\Image;
-
-use function Psy\debug;
+use App\Http\Requests\Admin\Post\BlogPostChangeImagePosition;
+use App\Http\Requests\Admin\Post\BlogPostUploadVideo;
 
 class PostController extends Controller
 {
 
+    use ImageTrait;
+
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created post resource in storage.
      *
      * @param  \App\Http\Requests\StoreBlogPost  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Response json new created blogpost resource
      */
     public function store(BlogPostStore $request)
     {
@@ -51,76 +45,45 @@ class PostController extends Controller
         return response()->json($post, 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $story = Story::find($id);
-        $posts = $story->posts();
 
-        return view('blog.story.show', array(
-            'story' => $story,
-            'posts' => $posts->get()
-        ));
-    }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Searches for a post (by ID) and returns it with all images
+     * 
+     * @param int $id   -   Post ID
+     * 
+     * @return json return the post resource
      */
-    public function edit($id)
+    public function get($id)
     {
         $post = Post::with('images')->where('id', $id)->first();
         return response()->json($post, 200);
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateBlogPost  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Update the post resource and create/save new title image if needed
+     * 
+     * @param App\Http\Request\Admin\Post\BlogPostUpdate $request
+     * @param int $id   -   post ID
+     * 
+     * @return json return the updated post resource
      */
     public function update(BlogPostUpdate $request, $id)
     {
 
         $validated = $request->validated();
+
         $post = Post::find($id);
-
-        if ($post->type === 'video' && sizeof($validated) > 1) {
-
-            $post->fill(Arr::except($validated, ['content']));
-
-            $content = json_decode($validated['content']);
-
-            $path =  'stories/' . $post->story_id . '/posts/' . $post->id;
-            Storage::move('public/temp/' . $content->name, 'public/' . $path . '/' . $content->name);
-
-            //delete old video from post folder.
-            $old = json_decode($post->content);
-            Storage::delete('public/' . $old->path . '/' . $old->name);
-
-            $content->path = $path;
-            $post->content = json_encode($content);
-            $post->save();
-        } else {
-            $post->update($validated);
-        }
+        $post->update($validated);
 
         return response()->json($post, 200);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified post resource from storage & database.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return boolean 
      */
     public function destroy($id)
     {
@@ -136,38 +99,52 @@ class PostController extends Controller
         return response()->json(true);
     }
 
+    /**
+     * Upload/save image to given post
+     * 
+     * @param App\Http\Request\Admin\Post\BlogPostUploadImage $request
+     * @param int $id   -   post ID
+     * 
+     * @return json return the uploaded image resource
+     */
     public function uploadImage(BlogPostUploadImage $request, $id)
     {
 
-        $file = $request->file('file');
+        $validated = $request->validated();
 
         $post = Post::find($id);
         $sizeConf = "image_post";
         $path = "{$post->story['path']}{$post->id}/";
 
-        $imageController = new ImageController();
-        $image = $imageController->save($file, $path, $sizeConf);
-
-
+        $newImage = $this->saveImage($validated['file'], $path, $sizeConf);
         $lastImage = $post->images->sortByDesc('position')->first();
+        $post->images()->attach($newImage->id, ['position' => $lastImage ? $lastImage->position + 1 : 0]);
 
-
-        $post->images()->attach($image->id, ['position' => $lastImage ? $lastImage->position + 1 : 0]);
-
-        return response()->json($image, 200);
+        return response()->json($newImage, 200);
     }
 
-    public function uploadVideo(Request $request, $id)
+    /**
+     * Upload/save video chunks and put the video together if last chunk is sent
+     * 
+     * @param App\Http\Request\Admin\Post\BlogPostUploadVideo $request
+     * @param int $id   -   post ID
+     * 
+     * @return json if is last chunk return the video resource if not return boolean (true)
+     */
+    public function uploadVideo(BlogPostUploadVideo $request, $id)
     {
 
+        $validated = $request->validated();
         $post = Post::find($id);
-        $file = $request->file('file');
+
+        $file = $validated['file'];
 
         $path = Storage::disk('local')->path("chunks/{$file->getClientOriginalName()}");
 
         File::append($path, $file->get());
 
-        if ($request->has('is_last') && $request->boolean('is_last')) {
+        if (Arr::has($validated, 'is_last') && $validated['is_last'] == '1') {
+
             $name = basename($path, '.part');
             $publicPath = "{$post->story['path']}{$post->id}";
             $storagePath = 'public/' . $publicPath;
@@ -175,7 +152,6 @@ class PostController extends Controller
             if (!Storage::exists($storagePath)) {
                 Storage::makeDirectory($storagePath);
             }
-
 
             File::move($path,  Storage::disk('local')->path($storagePath . '/' . $name));
 
@@ -188,12 +164,17 @@ class PostController extends Controller
 
             return response()->json($post);
         }
-
-
         return response()->json(['uploaded' => true]);
     }
 
-    public function deleteVideo(Request $request, $id)
+    /**
+     * Delete the video file from a given post
+     * 
+     * @param int $id   -   post ID
+     * 
+     * @return json return json error if not found
+     */
+    public function deleteVideo($id)
     {
         $post = Post::find($id);
         $postContent = json_decode($post->content);
@@ -208,41 +189,24 @@ class PostController extends Controller
         return response()->json(['message' => 'file not found', 'path' => $filePath]);
     }
 
-
-    protected function createFilename(UploadedFile $file)
+    /**
+     * Change the position of an image
+     * 
+     * @param App\Http\Request\Admin\Post\PostChangeImagePosition $request
+     * @param int $id   -   Post ID
+     * 
+     * @return boolean
+     */
+    public function changeImagePosition(BlogPostChangeImagePosition $request, $id)
     {
-        $extension = $file->getClientOriginalExtension();
-        $filename = str_replace("." . $extension, "", $file->getClientOriginalName()); // Filename without extension
 
-        // Add timestamp hash to name of the file
-        $filename .= "_" . md5(time()) . "." . $extension;
-
-        return $filename;
-    }
-
-    public function deleteImage($id)
-    {
-        $image = Image::find($id);
-        $dir = scandir(public_path('storage/' . $image->path));
-        foreach ($dir as $scanImage) {
-            if (strpos($scanImage, $image->title) === 0) {
-                unlink(public_path('storage/' . $image->path . '/' . $scanImage));
-            }
-        }
-        if ($image->delete()) {
-            return response()->json(['success'   => 'true']);
-        }
-    }
-
-
-    public function changeImagePosition(Request $request, $id)
-    {
+        $validated = $request->validated();
 
         $album = Post::find($id);
-        $album->images()->updateExistingPivot($request->image_id, ['position' => $request->position]);
+        $album->images()->updateExistingPivot($validated['image_id'], ['position' => $validated['position']]);
         return response()->json(['success' => true]);
     }
-
+    /* 
     //regenerate Image Sizes from Image posts
     public function generateImages($id)
     {
@@ -253,11 +217,7 @@ class PostController extends Controller
                 'message' => 'kein Bilder Beitrag'
             ]);
         }
-        /*         $imageController = new ImageController();
-        foreach ($post->images as $image) {
-            $message[] = $imageController->generate($image->path . $image->title . '.' . $image->extension, $image->path, $sizeConf);
-        };
- */
+
         foreach ($post->images as $image) {
             GenerateImageVersions::dispatch($image, 'string', 'image_post');
             $message[] = 'ein Bild (ID: ' . $image->id . ') wurde zur Warteschlange hinzugefügt';
@@ -266,5 +226,5 @@ class PostController extends Controller
         return response()->json([
             'message' => $message
         ]);
-    }
+    } */
 }

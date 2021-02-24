@@ -22,8 +22,11 @@ class ImageFactory extends Factory
      */
     public function definition()
     {
+
+        $i = rand(2,8);
+
         return [
-            'title' => 'dummy_01',
+            'title' => "dummy_0{$i}",
             'description' => 'Test Image',
             'path' => 'static/dummy/',
             'extension' => 'jpg',

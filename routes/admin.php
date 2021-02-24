@@ -30,18 +30,14 @@ Route::post('/auth/logout', [AuthController::class, 'logout']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
 
-
-
     Route::get('/test', [AlbumController::class, 'index']);
-
-
 
     /*
     | User routes - Benutzer
     */
     Route::group(['prefix' => 'user'], function () {
         Route::get('/', [UserController::class, 'index']);
-        Route::get('/{id}', [UserController::class, 'edit']);
+        Route::get('/{id}', [UserController::class, 'get']);
         Route::post('/{id}', [UserController::class, 'update']);
         Route::post('/', [UserController::class, 'store']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
@@ -53,7 +49,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     */
     Route::group(['prefix' => 'album'], function () {
         Route::get('/', [AlbumController::class, 'index']);
-        Route::get('/{id}', [AlbumController::class, 'edit']);
+        Route::get('/{id}', [AlbumController::class, 'get']);
         Route::post('/create', [AlbumController::class, 'store']);
         Route::post('/update/{id}', [AlbumController::class, 'update']);
         Route::delete('/{id}', [AlbumController::class, 'destroy']);
@@ -67,7 +63,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     */
     Route::group(['prefix' => 'story'], function () {
         Route::get('/', [StoryController::class, 'index']);
-        Route::get('/{id}', [StoryController::class, 'edit']);
+        Route::get('/{id}', [StoryController::class, 'get']);
         Route::post('/create', [StoryController::class, 'store']);
         Route::post('/update/{id}', [StoryController::class, 'update']);
         Route::delete('/{id}', [StoryController::class, 'destroy']);
@@ -78,8 +74,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     | Post routes - Beiträge
     */
     Route::group(['prefix' => 'post'], function () {
-        // Route::get('/', [PostController::class, 'index']);
-        Route::get('/{id}', [PostController::class, 'edit']);
+        Route::get('/{id}', [PostController::class, 'get']);
         Route::post('/create', [PostController::class, 'store']);
         Route::post('/update/{id}', [PostController::class, 'update']);
         Route::delete('/{id}', [PostController::class, 'destroy']);
@@ -87,15 +82,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/uploadvideo/{id}', [PostController::class, 'uploadVideo']);
         Route::delete('/video/{id}', [PostController::class, 'deleteVideo']);
         Route::post('/{id}/position', [PostController::class, 'changeImagePosition']);
-
-        //Route::post('/{id}/posit', [PostController::class, 'changePosition']);
     });
-
 
     /*
     | Image routes - Bilder
     */
-
     Route::group(['prefix' => 'image'], function () {
         Route::post('/update/{id}', [ImageController::class, 'update']);
         Route::delete('/{id}', [ImageController::class, 'destroy']);

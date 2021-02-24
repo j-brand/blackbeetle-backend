@@ -1,13 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Admin\Post;
+namespace App\Http\Requests\Admin\Image;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-use App\Models\Post;
-use Illuminate\Validation\Rule;
-
-class BlogPostUpdate extends FormRequest
+class ImageUpdate extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,11 +24,7 @@ class BlogPostUpdate extends FormRequest
     public function rules()
     {
         return [
-            'active'   => 'integer',
-            'date'     => 'date',
-            'title'    => ['string', 'max:255', Rule::unique('posts')->ignore(Post::find($this->id)->id)],
-            'content'  => '',
-            'position' => 'integer'
+            'description'         => 'string',
         ];
     }
 }
