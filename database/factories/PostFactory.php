@@ -3,17 +3,51 @@
 namespace Database\Factories;
 
 use App\Models\Post;
+use App\Models\Story;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use App\Http\Traits\ImageTrait;
 
 class PostFactory extends Factory
 {
+
+    use ImageTrait;
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
     protected $model = Post::class;
+
+    /**
+     * Configure the model factory.
+     *
+     * @return $this
+     */
+    public function configure()
+    {
+        return $this->afterMaking(function (Post $post) {
+
+            //
+        })->afterCreating(function (Post $post) {
+
+            if ($post->type == 'image') {
+
+                $story = Story::find($post->story_id);
+
+                collect([2, 3, 7, 8])->map(function ($i) use ($story, $post) {
+                    $image = $this->genImage("public/static/dummy/dummy_0{$i}.jpg", "{$story->path}{$post->id}/", 'image_post');
+                    $image->description = $this->faker->realText(20);
+                    $image->save();
+                    $imageCount = $post->images->count();
+                    $post->images()->attach($image->id, ['position' => $imageCount + 1]);
+                });
+            }
+        });
+    }
+
+
+
 
     /**
      * Define the model's default state.
@@ -57,6 +91,7 @@ class PostFactory extends Factory
         return $this->state(function (array $attributes) {
             return [
                 'type' => 'video',
+                'content' => '{"path":"storage\/static\/dummy","filename":"dummy_video.mp4"}'
             ];
         });
     }

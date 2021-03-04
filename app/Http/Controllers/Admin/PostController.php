@@ -157,7 +157,7 @@ class PostController extends Controller
 
             $video = array(
                 'path' => 'storage/' . $publicPath,
-                'filename' => $name
+                'filename' => $name,
             );
             $post->content = json_encode($video);
             $post->save();

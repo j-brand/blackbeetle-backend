@@ -36,12 +36,19 @@ class AlbumFactory extends Factory
         })->afterCreating(function (Album $album) {
 
             $album->path = "albums/{$album->id}/";
+
             $album->save();
-            collect([2, 3, 4, 5])->map(function ($i) use ($album) {
-                $image = $this->genImage("public/static/dummy/dummy_0{$i}.jpg", $album->path, 'album_title_image');
+            collect([2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5])->map(function ($i) use ($album) {
+                $image = $this->genImage("public/static/dummy/dummy_0{$i}.jpg", $album->path, 'album_image');
+                $image->description = $this->faker->realText(20);
+                $image->save();
                 $imageCount = $album->images->count();
                 $album->images()->attach($image->id, ['position' => $imageCount + 1]);
             });
+
+            $titleImage = $this->genImage("public/static/dummy/dummy_01.jpg", $album->path, 'album_title_image');
+            $album->title_image =  $titleImage->id;
+            $album->save();
         });
     }
 
@@ -55,9 +62,10 @@ class AlbumFactory extends Factory
     {
         $title_string = $this->faker->city();
 
+
         return [
             'title'             => $title_string,
-            'title_image'       => Image::factory()->create(),
+            'title_image'       => 1,
             'title_image_text'  => $this->faker->realText(60),
             'start_date'        => $this->faker->dateTimeBetween($startDate = '-4 years', $endDate = '-3 years', $timezone = null, $format = 'Y-m-d'),
             'end_date'          => $this->faker->dateTimeBetween($startDate = '-2 years', $endDate = '-1 years', $timezone = null, $format = 'Y-m-d'),

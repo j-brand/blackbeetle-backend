@@ -122,8 +122,7 @@ trait ImageTrait
         //   $extension = Storage::extension($image);
         $infoPath = pathinfo(storage_path($image));
         $image = Storage::get($image);
-
-        $extension = $infoPath['extension'];
+        $extension = $infoPath['extension']; 
         $imageFile = IntImage::make($image);
 
         foreach ($this->sizeConf[$sizeConf] as $size) {

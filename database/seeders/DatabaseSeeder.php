@@ -17,7 +17,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-
         Storage::disk('public')->deleteDirectory('albums');
         Storage::disk('public')->deleteDirectory('stories');
 
@@ -28,6 +27,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Album::factory()->count(3)->create();
-        Story::factory()->count(3)->create();
+        Story::factory()->count(1)->create();
     }
 }

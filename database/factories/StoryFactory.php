@@ -8,9 +8,12 @@ use App\Models\Post;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use App\Http\Traits\ImageTrait;
 
 class StoryFactory extends Factory
 {
+    use ImageTrait;
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -27,14 +30,47 @@ class StoryFactory extends Factory
     public function configure()
     {
         return $this->afterMaking(function (Story $story) {
-            
+
             //
         })->afterCreating(function (Story $story) {
-            Post::factory()->count(1)->mapPost()->create(['story_id' => $story->id]);
-            Post::factory()->count(2)->create(['story_id' => $story->id]);
-            Post::factory()->count(1)->imagePost()->create(['story_id' => $story->id]);
-            Post::factory()->count(1)->videoPost()->create(['story_id' => $story->id]);
-            Post::factory()->count(2)->create(['story_id' => $story->id]);
+            $story->path = "stories/{$story->id}/";
+
+            $story->save();
+
+            $titleImage = $this->genImage("public/static/dummy/dummy_01.jpg", $story->path, 'story_title_image');
+            $story->title_image =  $titleImage->id;
+            $story->save();
+
+
+            for ($i = 0; $i <= 20; $i++) {
+
+                $rand = rand(0, 9);
+                $postCount = Post::where('story_id', $story->id)->count();
+                echo ("seeding post {$postCount} of Story {$story->title}\n");
+
+                switch ($rand) {
+                    case 0:
+                    case 1:
+                    case 2:    
+                        Post::factory()->imagePost()->create(['story_id' => $story->id, 'position' => $postCount  + 1]);
+                        break;
+                    case 3:
+                        Post::factory()->mapPost()->create(['story_id' => $story->id, 'position' => $postCount  + 1]);
+                        break;
+                    case 4:
+                        Post::factory()->videoPost()->create(['story_id' => $story->id, 'position' => $postCount  + 1]);
+                        break;
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                        Post::factory()->create(['story_id' => $story->id, 'position' => $postCount  + 1]);
+                        break;
+                    default:
+                        break;
+                }
+            }
         });
     }
 

@@ -12,5 +12,5 @@ This is where the magic happens...
 
 ## Technologies & Frameworks
 
-- [Laravel 8](https://laravel.com/) 8
+- [Laravel](https://laravel.com/) 8
 - [Laravel Sanctum](https://laravel.com/docs/8.x/sanctum)
