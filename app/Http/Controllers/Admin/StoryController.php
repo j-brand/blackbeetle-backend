@@ -50,8 +50,9 @@ class StoryController extends Controller
         $story->save();
 
         $story->path = 'stories/' . $story->id . '/';
-        $sizeConf = "story_title_image";
-        $newImage = $this->saveImage($validated['image_upload'], $story->path, $sizeConf);
+
+        $newImage = $this->saveImage($validated['image_upload'], $story->path);
+        $this->genVariants($newImage->id, "story_title_image");
 
         $story->title_image = $newImage->id;
         $story->save();
@@ -85,8 +86,9 @@ class StoryController extends Controller
         $story = Story::find($id);
 
         if (Arr::exists($validated, 'image_upload')) {
-            $sizeConf = "story_title_image";
-            $newImage = $this->saveImage($validated['image_upload'], $story->path, $sizeConf);
+            $newImage = $this->saveImage($validated['image_upload'], $story->path);
+            $this->genVariants($newImage->id, "story_title_image");
+
             $validated = Arr::add($validated, 'title_image', $newImage->id);
             $this->deleteImageFile($story->title_image);
         }
@@ -112,5 +114,19 @@ class StoryController extends Controller
             Storage::deleteDirectory('public/' . $storyPath);
         }
         return response()->json(['success' => true]);
+    }
+
+    public function regenerateTitleImage($id)
+    {
+        $titleImage = Story::find($id)->title_image()->first();
+
+        //create & save cover image and al variants
+        $this->deleteImageFile($titleImage->id, true);
+        $this->genVariants($titleImage->id, 'story_title_image');
+
+
+        return response()->json([
+            'message' => 'generation done'
+        ]);
     }
 }

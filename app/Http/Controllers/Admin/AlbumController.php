@@ -15,7 +15,7 @@ use App\Http\Requests\Admin\Album\AlbumUpdate;
 use App\Http\Requests\Admin\Album\AlbumUploadImage;
 
 use App\Models\Album;
-use App\Models\Image;
+
 
 class AlbumController extends Controller
 {
@@ -52,7 +52,8 @@ class AlbumController extends Controller
         $album->path = 'albums/' . $album->id . '/';
 
         //create & save cover image and al variants
-        $newImage = $this->saveImage($validated['image_upload'], $album->path, 'album_title_image');
+        $newImage = $this->saveImage($validated['image_upload'], $album->path);
+        $this->genVariants($newImage->id, 'album_title_image');
 
         $album->title_image = $newImage->id;
         $album->save();
@@ -87,16 +88,17 @@ class AlbumController extends Controller
         $validated = $request->validated();
 
         $album = Album::find($id);
-        
+
         if (Arr::exists($validated, 'image_upload')) {
-            $newImage = $this->saveImage($validated['image_upload'], $album->path, 'album_title_image');
+            $newImage = $this->saveImage($validated['image_upload'], $album->path);
+            $this->genVariants($newImage->id, 'album_title_image');
+
             $validated = Arr::add($validated, 'title_image', $newImage->id);
             $this->deleteImageFile($album->title_image);
             $album->title_image = $newImage->id;
-
         }
         $album->update(Arr::except($validated, 'image_upload'));
-        
+
         $album = Album::with(['images', 'title_image'])->where('id', $id)->first();
         return response()->json($album, 200);
     }
@@ -137,9 +139,9 @@ class AlbumController extends Controller
 
         $album = Album::find($id);
         $sizeConf = "album_image";
-        $imageController = new ImageController();
-        $image = $imageController->save($validated['file'], $album->path, $sizeConf);
 
+        $image = $this->saveImage($validated['file'], $album->path);
+        $this->genVariants($image->id, $sizeConf);
 
         $imageCount = $album->images->count();
         $album->images()->attach($image->id, ['position' => $imageCount + 1]);
@@ -165,26 +167,25 @@ class AlbumController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /*     public function generate($id)
+    public function regenerate($id)
     {
         $album = Album::find($id);
-        if (!$album) {
-            return response()->json([
-                'message' => 'Album existiert nicht.'
-            ]);
-        }
+
         $images = $album->images()->get();
         $titleImage = $album->title_image()->first();
-        $message = [];
+
+
         foreach ($images as $image) {
-            GenerateImageVersions::dispatch($image, $album->path, 'album_image');
-            $message[] = 'ein Bild (ID: ' . $image->id . ') wurde zur Warteschlange hinzugefügt';
+            $this->deleteImageFile($image->id, true);
+            $this->genVariants($image->id, 'album_image');
         };
 
-        $titleImage === null ? GenerateImageVersions::dispatch('dummy.png', $album->path, 'album_title_image') : GenerateImageVersions::dispatch($titleImage, $album->path, 'album_title_image');
+        //create & save cover image and al variants
+        $this->deleteImageFile($titleImage->id, true);
+        $this->genVariants($titleImage->id, 'album_title_image');
 
         return response()->json([
-            'message' => $message
+            'message' => 'generation done'
         ]);
-    } */
+    }
 }

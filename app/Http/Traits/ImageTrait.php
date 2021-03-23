@@ -22,6 +22,7 @@ trait ImageTrait
         5   =>  array('width' => 500,    'height' => 500,    'slug' => '_athn',    'method' => 'fit'),
         /* ALBUM - gallery slider*/
         6   =>  array('width' => 1000,   'height' => 500,    'slug' => '_aslider', 'method' => 'fit'),
+        61   =>  array('width' => 500,   'height' => 250,    'slug' => '_assmall', 'method' => 'fit'),
         7   =>  array('width' => 1920,   'height' => 1080,   'slug' => '_hd',      'method' => 'fit'),
         /* FACEBOOK SHARE IMAGE */
         8   =>  array('width' => 1200,   'height' => 630,    'slug' => '_fb',      'method' => 'fit'),
@@ -32,10 +33,10 @@ trait ImageTrait
     );
 
     private $sizeConf = array(
-        'album_image'       => [0, 1, 2, 9],
-        'album_title_image' => [0, 2, 3, 4, 5, 6, 7, 9],
-        'story_title_image' => [0, 2, 3, 4, 8],
-        'image_post'        => [0, 1, 2, 9, 11],
+        'album_image'       => [1, 2, 9],
+        'album_title_image' => [2, 3, 4, 5, 6, 61, 7, 9],
+        'story_title_image' => [2, 3, 4, 6, 8],
+        'image_post'        => [1, 2, 9, 11],
     );
 
     private function resize($image, $size)
@@ -54,30 +55,15 @@ trait ImageTrait
     }
 
 
-    public function saveImage($image, $path, $sizeConf)
+    public function saveImage($image, $path, $isPath = false)
     {
-        $file   = $image->getClientOriginalName();
         $filename = uniqid('img_');
-        $extension = pathinfo($file, PATHINFO_EXTENSION);
+        $extension = $isPath ? pathinfo($image, PATHINFO_EXTENSION) : $image->getClientOriginalExtension();
+
+        $filePath = "public/{$path}{$filename}.{$extension}";
 
         $imageFile = IntImage::make($image);
-
-        if (Storage::disk('local')->exists('public/' . $path . $filename . '.' . $extension)) {
-            $filename .= '_01';
-        }
-        foreach ($this->sizeConf[$sizeConf] as $size) {
-            $newImage =  $this->resize(IntImage::make($image), $size);
-
-            $filePath = 'public/' . $path . $filename . $this->sizes[$size]['slug'] . '.' . $extension;
-            $filePathLazy = 'public/' . $path . $filename . $this->sizes[$size]['slug'] . '_lazy.' . $extension;
-
-            if ($newImage) {
-                Storage::put($filePath, $newImage->encode());
-                Storage::put($filePathLazy, $this->generateLazy($newImage)->encode());
-            } else {
-                return false;
-            }
-        }
+        Storage::put($filePath, $imageFile->encode());
 
         $imageObj               = new Image();
         $imageObj->title        = $filename;
@@ -101,11 +87,15 @@ trait ImageTrait
         return $image;
     }
 
-    public function deleteImageFile($id)
+    public function deleteImageFile($id, $variantsOnly = false)
     {
         $image = Image::find($id);
 
         $collection = collect($this->sizes);
+
+        if ($variantsOnly) {
+            $collection = $collection->except(['0']);
+        }
 
         $collection->map(function ($size) use ($image) {
             Storage::delete("public/{$image->path}{$image->title}{$size['slug']}.{$image->extension}");
@@ -114,37 +104,23 @@ trait ImageTrait
     }
 
 
-    public function genImage($image, $path, $sizeConf)
+    public function genVariants($imageId, $sizeConf)
     {
 
-        //$file   = $image->getClientOriginalName();
-        $filename = uniqid('img_');
-        //   $extension = Storage::extension($image);
-        $infoPath = pathinfo(storage_path($image));
-        $image = Storage::get($image);
-        $extension = $infoPath['extension']; 
-        $imageFile = IntImage::make($image);
+        $imageModel = Image::find($imageId);
+        $imagePath = "public/{$imageModel->path}{$imageModel->title}.{$imageModel->extension}";
+
+        $imageFile = Storage::get($imagePath);
 
         foreach ($this->sizeConf[$sizeConf] as $size) {
-            $newImage =  $this->resize(IntImage::make($image), $size);
+            $newImage =  $this->resize(IntImage::make($imageFile), $size);
 
-            $filePath = 'public/' . $path . $filename . $this->sizes[$size]['slug'] . '.' . $extension;
-            $filePathLazy = 'public/' . $path . $filename . $this->sizes[$size]['slug'] . '_lazy.' . $extension;
-
+            $filePath = 'public/' . $imageModel->path . $imageModel->title . $this->sizes[$size]['slug'] . '.' . $imageModel->extension;
+            $filePathLazy = 'public/' . $imageModel->path . $imageModel->title . $this->sizes[$size]['slug'] . '_lazy.' . $imageModel->extension;
 
             Storage::put($filePath, $newImage->encode());
             Storage::put($filePathLazy, $this->generateLazy($newImage)->encode());
         }
-        
-
-        return Image::create([
-            'title'         => $filename,
-            'path'          => $path,
-            'width'         => $imageFile->width(),
-            'height'        => $imageFile->height(),
-            'description'   => "",
-            'extension'     => $extension,
-            'created_at'    => Carbon::now(),
-        ]);
+        return true;
     }
 }

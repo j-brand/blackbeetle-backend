@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use Storage;
+
+
 use App\Models\Story;
 use App\Models\Image;
 use App\Models\Post;
@@ -37,7 +40,8 @@ class StoryFactory extends Factory
 
             $story->save();
 
-            $titleImage = $this->genImage("public/static/dummy/dummy_01.jpg", $story->path, 'story_title_image');
+            $titleImage = $this->saveImage(Storage::disk('public')->path("static/dummy/dummy_01.jpg"), $story->path, true);
+            $this->genVariants($titleImage->id, 'story_title_image');
             $story->title_image =  $titleImage->id;
             $story->save();
 
@@ -51,7 +55,7 @@ class StoryFactory extends Factory
                 switch ($rand) {
                     case 0:
                     case 1:
-                    case 2:    
+                    case 2:
                         Post::factory()->imagePost()->create(['story_id' => $story->id, 'position' => $postCount  + 1]);
                         break;
                     case 3:

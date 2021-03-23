@@ -11,7 +11,7 @@ use App\Models\Image;
 class Album extends Model
 {
     use HasFactory;
-        /**
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
@@ -26,7 +26,7 @@ class Album extends Model
         'start_date',
         'end_date',
     ];
-        /**
+    /**
      * The attributes that should be hidden for arrays.
      *
      * @var array
@@ -58,4 +58,5 @@ class Album extends Model
         $imagePath = $titleImage[0]->path . $titleImage[0]->title . '_athn.' . $titleImage[0]->extension;
         return $imagePath;
     }
+
 }

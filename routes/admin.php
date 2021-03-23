@@ -1,8 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AlbumController;
@@ -20,6 +18,9 @@ use App\Http\Controllers\Admin\AdminController;
 
 Route::post('/auth/login', [AuthController::class, 'authenticate']);
 Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+Route::get('/generate/album/{id}', [AlbumController::class, 'regenerate']);
+Route::get('/generate/story/{id}', [StoryController::class, 'regenerateTitleImage']);
 
 
 /*

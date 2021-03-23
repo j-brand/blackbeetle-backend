@@ -39,14 +39,19 @@ class AlbumFactory extends Factory
 
             $album->save();
             collect([2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5])->map(function ($i) use ($album) {
-                $image = $this->genImage("public/static/dummy/dummy_0{$i}.jpg", $album->path, 'album_image');
+
+                $image = $this->saveImage(Storage::disk('public')->path("static/dummy/dummy_0{$i}.jpg"), $album->path, true);
+                $this->genVariants($image->id, 'album_image');
+
                 $image->description = $this->faker->realText(20);
                 $image->save();
                 $imageCount = $album->images->count();
                 $album->images()->attach($image->id, ['position' => $imageCount + 1]);
             });
 
-            $titleImage = $this->genImage("public/static/dummy/dummy_01.jpg", $album->path, 'album_title_image');
+            $titleImage = $this->saveImage(Storage::disk('public')->path("static/dummy/dummy_01.jpg"), $album->path, true);
+            $this->genVariants($titleImage->id, 'album_title_image');
+
             $album->title_image =  $titleImage->id;
             $album->save();
         });

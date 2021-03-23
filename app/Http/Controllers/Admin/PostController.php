@@ -113,10 +113,11 @@ class PostController extends Controller
         $validated = $request->validated();
 
         $post = Post::find($id);
-        $sizeConf = "image_post";
         $path = "{$post->story['path']}{$post->id}/";
 
-        $newImage = $this->saveImage($validated['file'], $path, $sizeConf);
+        $newImage = $this->saveImage($validated['file'], $path);
+        $this->genVariants($newImage->id, "image_post");
+
         $lastImage = $post->images->sortByDesc('position')->first();
         $post->images()->attach($newImage->id, ['position' => $lastImage ? $lastImage->position + 1 : 0]);
 

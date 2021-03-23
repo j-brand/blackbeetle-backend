@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use Storage;
+
 use App\Models\Post;
 use App\Models\Story;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -36,7 +38,11 @@ class PostFactory extends Factory
                 $story = Story::find($post->story_id);
 
                 collect([2, 3, 7, 8])->map(function ($i) use ($story, $post) {
-                    $image = $this->genImage("public/static/dummy/dummy_0{$i}.jpg", "{$story->path}{$post->id}/", 'image_post');
+
+                    $image = $this->saveImage(Storage::disk('public')->path("static/dummy/dummy_0{$i}.jpg"), "{$story->path}{$post->id}/", true);
+                    $this->genVariants($image->id, 'image_post');
+
+
                     $image->description = $this->faker->realText(20);
                     $image->save();
                     $imageCount = $post->images->count();
