@@ -19,10 +19,6 @@ use App\Http\Controllers\Admin\AdminController;
 Route::post('/auth/login', [AuthController::class, 'authenticate']);
 Route::post('/auth/logout', [AuthController::class, 'logout']);
 
-Route::get('/generate/album/{id}', [AlbumController::class, 'regenerate']);
-Route::get('/generate/story/{id}', [StoryController::class, 'regenerateTitleImage']);
-
-
 /*
 |--------------------------------------------------------------------------
 | ADMIN Routes
@@ -30,8 +26,6 @@ Route::get('/generate/story/{id}', [StoryController::class, 'regenerateTitleImag
 */
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-
-    Route::get('/test', [AlbumController::class, 'index']);
 
     /*
     | User routes - Benutzer
@@ -50,6 +44,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     */
     Route::group(['prefix' => 'album'], function () {
         Route::get('/', [AlbumController::class, 'index']);
+        Route::get('/generate-title-images', [AlbumController::class, 'regenerateTitleImages']);
+        Route::get('/generate-images', [AlbumController::class, 'regenerateImages']);
         Route::get('/{id}', [AlbumController::class, 'get']);
         Route::post('/create', [AlbumController::class, 'store']);
         Route::post('/update/{id}', [AlbumController::class, 'update']);
@@ -64,6 +60,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     */
     Route::group(['prefix' => 'story'], function () {
         Route::get('/', [StoryController::class, 'index']);
+        Route::get('/generate-title-images', [StoryController::class, 'regenerateTitleImages']);
         Route::get('/{id}', [StoryController::class, 'get']);
         Route::post('/create', [StoryController::class, 'store']);
         Route::post('/update/{id}', [StoryController::class, 'update']);

@@ -12,8 +12,8 @@ use App\Http\Traits\ImageTrait;
 
 use App\Http\Requests\Admin\Story\StoryStore;
 use App\Http\Requests\Admin\Story\StoryUpdate;
+use App\Jobs\GenerateImageVersions;
 use App\Models\Story;
-use App\Models\Image;
 
 class StoryController extends Controller
 {
@@ -116,17 +116,18 @@ class StoryController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function regenerateTitleImage($id)
+    public function regenerateTitleImages()
     {
-        $titleImage = Story::find($id)->title_image()->first();
 
-        //create & save cover image and al variants
-        $this->deleteImageFile($titleImage->id, true);
-        $this->genVariants($titleImage->id, 'story_title_image');
 
+        $stories = Story::all()->pluck('title_image');
+
+        $stories->map(function ($item) {
+            GenerateImageVersions::dispatch($item, 'story_title_image');
+        });
 
         return response()->json([
-            'message' => 'generation done'
+            'message' => 'Generation jobs queued!'
         ]);
     }
 }

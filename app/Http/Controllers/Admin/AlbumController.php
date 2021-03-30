@@ -13,7 +13,7 @@ use App\Http\Requests\Admin\Album\AlbumChangeImagePosition;
 use App\Http\Requests\Admin\Album\AlbumStore;
 use App\Http\Requests\Admin\Album\AlbumUpdate;
 use App\Http\Requests\Admin\Album\AlbumUploadImage;
-
+use App\Jobs\GenerateImageVersions;
 use App\Models\Album;
 
 
@@ -167,25 +167,30 @@ class AlbumController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function regenerate($id)
+    public function regenerateImages()
     {
-        $album = Album::find($id);
 
-        $images = $album->images()->get();
-        $titleImage = $album->title_image()->first();
+        $albums = Album::with('images')->get()->pluck('images')->collapse()->pluck('id');
 
-
-        foreach ($images as $image) {
-            $this->deleteImageFile($image->id, true);
-            $this->genVariants($image->id, 'album_image');
-        };
-
-        //create & save cover image and al variants
-        $this->deleteImageFile($titleImage->id, true);
-        $this->genVariants($titleImage->id, 'album_title_image');
+        $albums->map(function ($item) {
+            GenerateImageVersions::dispatch($item, 'album_image');
+        });
 
         return response()->json([
-            'message' => 'generation done'
+            'message' => 'Generation jobs queued!'
+        ]);
+    }
+
+    public function regenerateTitleImages()
+    {
+        $albums = Album::all()->pluck('title_image');
+
+        $albums->map(function ($item) {
+            GenerateImageVersions::dispatch($item, 'album_title_image');
+        });
+
+        return response()->json([
+            'message' => 'Generation jobs queued!'
         ]);
     }
 }
