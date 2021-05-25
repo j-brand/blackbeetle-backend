@@ -61,6 +61,7 @@ class ImageController extends Controller
     public function destroy($id)
     {
         $this->deleteImageFile($id);
+        $image = Image::find($id)->delete();
         return true;
     }
 
