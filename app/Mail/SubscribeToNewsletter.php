@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class test extends Mailable
+class SubscribeToNewsletter extends Mailable
 {
     use Queueable, SerializesModels;
     public $details;
@@ -28,7 +28,7 @@ class test extends Mailable
      */
     public function build()
     {
-        return $this->subject('Mail from ItSolutionStuff.com')
-            ->view('mails.testMail');
+        return $this->subject('E-Mail-Adresse bestätigen')
+            ->view('mails.subscriptionVerify');
     }
 }

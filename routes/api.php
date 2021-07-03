@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Frontend\AlbumController;
 use App\Http\Controllers\Frontend\StoryController;
+use App\Http\Controllers\NewsletterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,8 +22,11 @@ use App\Http\Controllers\Frontend\StoryController;
     return $request->user();
 }); */
 
+
 Route::get('/album', [AlbumController::class, 'getAlbums']);
 Route::get('/album/{slug}', [AlbumController::class, 'getAlbumBySlug']);
 
 Route::get('/story', [StoryController::class, 'getStories']);
 Route::get('/story/{slug}/{order?}', [StoryController::class, 'getStoryBySlug']);
+
+Route::post('/newsletter', [NewsletterController::class, 'store']);

@@ -18,7 +18,7 @@ class CreateNewsletterSubscriptionsTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->foreignId('story_id')->constrained()->onDelete('cascade');
+            $table->foreignId('story_id')->constrained()->onDelete('cascade'); //DELETE (everything goes over options)
             $table->softDeletes();
             $table->timestamps();
         });

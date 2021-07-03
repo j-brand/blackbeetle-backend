@@ -27,6 +27,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Album::factory()->count(3)->create();
-        Story::factory()->count(1)->create();
+        Story::factory()->count(2)->create();
     }
 }
