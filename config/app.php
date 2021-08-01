@@ -123,6 +123,11 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+
+    //The Url of the Frontend Application
+    'frontend_url' => env('FRONTEND_URL'),
+
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers

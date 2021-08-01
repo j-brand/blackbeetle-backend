@@ -7,11 +7,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class TestMail extends Mailable
+class SendVerificationMail extends Mailable
 {
     use Queueable, SerializesModels;
     public $details;
-
     /**
      * Create a new message instance.
      *
@@ -29,7 +28,7 @@ class TestMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Mail from ItSolutionStuff.com')
-            ->view('mails.testMail');
+        return $this->subject('Blackbeetle E-Mail-Adresse verifizieren')->markdown('mails.verifyEmail')
+            ->with('details', $this->details);
     }
 }

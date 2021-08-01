@@ -3,14 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PublicFrontend\Newsletter\SubscriptionStore;
-use App\Mail\SubscribeToNewsletter;
+use App\Http\Requests\PublicFrontend\Newsletter\VerifyEmail;
+use App\Http\Requests\PublicFrontend\Newsletter\ResendVerificationEmail;
+use App\Jobs\SendVerificationMailJob;
 use App\Models\NewsletterSubscription;
 use Doctrine\Inflector\Rules\Substitution;
 use Illuminate\Http\Request;
 
+use Config;
+
 use Str;
 
 use App\Mail\TestMail;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 
 class NewsletterController extends Controller
@@ -45,12 +50,12 @@ class NewsletterController extends Controller
     {
         $validated = $request->validated();
 
-        //check if E-Mail exists in table newsletter_subscriptions
+        //check if E-Mail already exists in table newsletter_subscriptions
         if (NewsletterSubscription::where('email', $validated['email'])->exists()) {
 
             //check if E-Mail is Verified
-            if (NewsletterSubscription::where('email', $validated['email'])->pluck('token')[0] !== NULL) {
-                return response()->json(['message' => 'Bitte bestätige erst deine E-Mail-Adresse.'], 409);
+            if (NewsletterSubscription::where('email', $validated['email'])->pluck('email_verified_at')[0] === NULL) {
+                return response()->json(['message' => 'Bitte bestätige erst deine E-Mail-Adresse. Neue verifizierungs E-Mail <a class="underline" href="/resend-verification">erhalten</a>.'], 409);
             }
 
             $update = $this->update($validated);
@@ -65,6 +70,8 @@ class NewsletterController extends Controller
         $sub->options = json_encode($options);
         $sub->token =  (string) Str::uuid();
         $sub->save();
+
+        $validated['token'] = $sub->token;
 
         $this->sendMail($validated);
 
@@ -93,8 +100,19 @@ class NewsletterController extends Controller
         //
     }
 
-    public function verify($token){
+    public function verify(VerifyEmail $request)
+    {
+        $validated = $request->validated();
 
+        $sub = NewsletterSubscription::where('token', $validated['token'])->first();
+
+        if (empty($sub->email_verified_at)) {
+            $sub->email_verified_at = Carbon::now();
+            $sub->save();
+            return response()->json(['message' => $sub->name], 200);
+        } else {
+            return response()->json(['message' => "Deine E-Mail-Adresse ist bereits verifiziert."], 422);
+        }
     }
 
     /**
@@ -123,19 +141,29 @@ class NewsletterController extends Controller
         return ['message' => "Du wurdest für den Newsletter eingetragen.", 'code' => 200];
     }
 
-
-    public function sendMail($validated)
+    public function resend(ResendVerificationEmail $request)
     {
+        $validated = $request->validated();
+        $sub = NewsletterSubscription::where('email', $validated['email'])->first();
 
-
-        $sub_title = \App\Models\Story::where('id', $validated['option'])->pluck('title');
-
-        $details = [
-            'name' => $validated['name'],
-            'subscription_title' => $sub_title,
-            'newsletter' => 'This is for testing email using smtp'
+        $data = [
+            'name' => $sub->name,
+            'email' => $sub->email,
+            'token' => $sub->token
         ];
-        Mail::to($validated['email'])->send(new SubscribeToNewsletter($details));
+
+        $this->sendMail($data);
+    }
+
+
+    public function sendMail($data)
+    {
+        $details = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'link' => config('app.frontend_url') . '/verify-email/' . $data['token'],
+        ];
+        SendVerificationMailJob::dispatch($details);
     }
 
 

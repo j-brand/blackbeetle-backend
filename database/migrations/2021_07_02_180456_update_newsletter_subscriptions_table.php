@@ -18,8 +18,6 @@ class UpdateNewsletterSubscriptionsTable extends Migration
             $table->string('token')->nullable();
             $table->dropForeign(['story_id']);
             $table->dropColumn('story_id');
-            $table->dropColumn('email_verified_at');
-
         });
     }
 
