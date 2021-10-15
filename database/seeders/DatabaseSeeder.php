@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Story;
 use App\Models\Album;
-
+use App\Models\Subscriber;
 use Storage;
 
 class DatabaseSeeder extends Seeder
@@ -26,7 +26,9 @@ class DatabaseSeeder extends Seeder
             UsersTableSeeder::class,
         ]);
 
-        Album::factory()->count(3)->create();
+       // Album::factory()->count(3)->create();
         Story::factory()->count(2)->create();
+        Subscriber::factory()->count(10)->create();
+
     }
 }

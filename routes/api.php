@@ -32,3 +32,5 @@ Route::get('/story/{slug}/{order?}', [StoryController::class, 'getStoryBySlug'])
 Route::post('/newsletter', [NewsletterController::class, 'store']);
 Route::post('/verify-email', [NewsletterController::class, 'verify']);
 Route::post('/resend-verification', [NewsletterController::class, 'resend']);
+Route::get('/subscriptions/{token}', [NewsletterController::class, 'getSubscriptions']);
+Route::post('/subscriptions', [NewsletterController::class, 'updateSubscriptions']);

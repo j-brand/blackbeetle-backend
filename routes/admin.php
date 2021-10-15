@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\StoryController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\NewsletterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -108,17 +109,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
 
     /* 
-    | Authentication routes
+    | Nothification routes - Benachrichtigungen/Newsletter
     */
-    /*     Route::group(['prefix' => 'auth'], function () {
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::options('/login', ['middleware' => 'cors', function () {
-            return;
-        }]);
 
-        Route::post('/register', [AuthController::class, 'register']);
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-        Route::get('/user-profile', [AuthController::class, 'userProfile']);
-    }); */
+    Route::post('/nothify', [NewsletterController::class, 'nothify']);
 });

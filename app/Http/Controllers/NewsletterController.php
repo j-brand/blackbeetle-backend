@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PublicFrontend\Newsletter\SubscriptionStore;
 use App\Http\Requests\PublicFrontend\Newsletter\VerifyEmail;
 use App\Http\Requests\PublicFrontend\Newsletter\ResendVerificationEmail;
+use App\Http\Requests\PublicFrontend\Newsletter\SubscriptionUpdate;
+use App\Http\Requests\PublicFrontend\Newsletter\ValidateToken;
 use App\Jobs\SendVerificationMailJob;
 use App\Models\NewsletterSubscription;
 use Doctrine\Inflector\Rules\Substitution;
@@ -15,30 +17,14 @@ use Config;
 use Str;
 
 use App\Mail\TestMail;
+use App\Models\Story;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 
+use function PHPSTORM_META\map;
+
 class NewsletterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -78,27 +64,6 @@ class NewsletterController extends Controller
         return response()->json(['message' => "Du wurdest für den Newsletter eingetragen."], 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\NewsletterSubscription  $newsletterSubscription
-     * @return \Illuminate\Http\Response
-     */
-    public function show(NewsletterSubscription $newsletterSubscription)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\NewsletterSubscription  $newsletterSubscription
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(NewsletterSubscription $newsletterSubscription)
-    {
-        //
-    }
 
     public function verify(VerifyEmail $request)
     {
@@ -156,25 +121,39 @@ class NewsletterController extends Controller
     }
 
 
-    public function sendMail($data)
+
+
+    public function getSubscriptions($token)
     {
-        $details = [
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'link' => config('app.frontend_url') . '/verify-email/' . $data['token'],
-        ];
-        SendVerificationMailJob::dispatch($details);
+
+        $stories = Story::all();
+        $subs = NewsletterSubscription::where('token', $token)->first();
+        $subscriptions = json_decode($subs->options, true);
+
+        $subsFormatted = [];
+
+        foreach ($stories as $story) {
+            $subsFormatted[] = [
+                "id" => $story->id,
+                "title" => $story->title,
+                "is_sub" => in_array($story->id, explode("|", $subscriptions['story_id']))
+            ];
+        }
+        return response()->json($subsFormatted);
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\NewsletterSubscription  $newsletterSubscription
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(NewsletterSubscription $newsletterSubscription)
+    public function updateSubscriptions(SubscriptionUpdate $request)
     {
-        //
+
+        $validated = $request->validated();
+
+        $subs = NewsletterSubscription::where('token', $validated['token'])->first();
+        $subscriptions = json_decode($subs->options, true);
+        $subscriptions['story_id'] = $validated['subscriptions'];
+
+        $subs->options = json_encode($subscriptions);
+        $subs->save();
+
+        return response()->json(['message' => "Deine Einstellungen wurden erfolgreich gespeichert."], 200);
     }
 }

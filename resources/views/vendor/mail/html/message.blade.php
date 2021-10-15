@@ -21,6 +21,8 @@
 {{-- Footer --}}
 @slot('footer')
 @component('mail::footer')
+Made with 💖 and interest by Johannes Brand
+<br>
 © {{ date('Y') }} {{ config('app.name') }}. @lang('All rights reserved.')
 @endcomponent
 @endslot
