@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Frontend\AlbumController;
 use App\Http\Controllers\Frontend\StoryController;
-use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\Frontend\SubscriptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,8 +29,8 @@ Route::get('/album/{slug}', [AlbumController::class, 'getAlbumBySlug']);
 Route::get('/story', [StoryController::class, 'getStories']);
 Route::get('/story/{slug}/{order?}', [StoryController::class, 'getStoryBySlug']);
 
-Route::post('/newsletter', [NewsletterController::class, 'store']);
-Route::post('/verify-email', [NewsletterController::class, 'verify']);
-Route::post('/resend-verification', [NewsletterController::class, 'resend']);
-Route::get('/subscriptions/{token}', [NewsletterController::class, 'getSubscriptions']);
-Route::post('/subscriptions', [NewsletterController::class, 'updateSubscriptions']);
+Route::post('/newsletter', [SubscriptionController::class, 'store']);
+Route::post('/verify-email', [SubscriptionController::class, 'verify']);
+Route::post('/resend-verification', [SubscriptionController::class, 'resend']);
+Route::get('/subscriptions/{token}', [SubscriptionController::class, 'getSubscriptions']);
+Route::post('/subscription', [SubscriptionController::class, 'updateSubscription']);

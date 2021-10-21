@@ -7,10 +7,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class SendVerificationMail extends Mailable
+class NothificationMail extends Mailable
 {
     use Queueable, SerializesModels;
-    public $details;
+
+    protected $details;
+
     /**
      * Create a new message instance.
      *
@@ -28,7 +30,7 @@ class SendVerificationMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Blackbeetle E-Mail-Adresse verifizieren')->markdown('mails.verifyEmail')
+        return $this->subject($this->details['subject'])->markdown('mails.nothificationEmail')
             ->with('details', $this->details);
     }
 }

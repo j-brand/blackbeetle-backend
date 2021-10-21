@@ -8,9 +8,7 @@ use App\Http\Requests\Admin\Image\ImageUpdate;
 
 use App\Http\Traits\ImageTrait;
 
-use Carbon\Carbon;
 use Storage;
-use IntImage;
 
 use App\Models\Image;
 
@@ -65,36 +63,4 @@ class ImageController extends Controller
         return true;
     }
 
-
-    /* 
-    public function generate($imgPath, $path, $sizeConf)
-    {
-        $imagePath = $imgPath;
-
-        if (strpos($imagePath, "storage/") === 0) {
-            $imagePath = substr($imagePath, 8);
-        }
-
-        if (!Storage::disk('local')->exists('public/' . $imagePath)) {
-            return 'Datei nicht gefunden: ' . 'public/' . $imagePath;
-        }
-
-        $fileInfo = pathinfo('public/' . $imagePath);
-        $file = Storage::get('public/' . $imagePath);
-
-        foreach ($this->sizeConf[$sizeConf] as $size) {
-            $newImage =  $this->resize(IntImage::make($file), $size);
-
-            $filePath =  $fileInfo['dirname'] . '/' . $fileInfo['filename'] . $this->sizes[$size]['slug'] . '.' . $fileInfo['extension'];
-            $filePathLazy =  $fileInfo['dirname'] . '/' . $fileInfo['filename'] . $this->sizes[$size]['slug'] . '_lazy.' . $fileInfo['extension'];
-
-            if ($newImage) {
-                Storage::put($filePath, $newImage->encode());
-                Storage::put($filePathLazy, $this->generateLazy($newImage)->encode());
-            } else {
-                return false;
-            }
-        }
-        return response()->json('images generated!');
-    } */
 }

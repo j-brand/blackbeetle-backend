@@ -24,8 +24,9 @@ class SubscriptionUpdate extends FormRequest
     public function rules()
     {
         return [
-            'subscriptions' => "nullable|string",
-            'token' => 'required|uuid|exists:newsletter_subscriptions,token'
+            'option' => "required|string",
+            'value' => "required|boolean",
+            'token' => 'required|uuid|exists:subscribers,token'
         ];
     }
 }

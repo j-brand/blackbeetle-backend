@@ -24,7 +24,7 @@ class ResendVerificationEmail extends FormRequest
     public function rules()
     {
         return [
-            'email' => 'required|exists:newsletter_subscriptions,email',
+            'email' => 'required|exists:subscribers,email',
         ];
     }
 }

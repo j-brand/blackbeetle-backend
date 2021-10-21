@@ -27,7 +27,8 @@ class SendNewsletter extends FormRequest
             'option'            => 'required|string',
             'subject'            => 'required|string',
             'content'            => 'required|string',
-            'image'            => 'required|string',
+            'image'            => 'nullable|string',
+            'slug'            => 'required|string',
         ];
     }
 }
