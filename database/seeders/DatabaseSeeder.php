@@ -2,11 +2,12 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Support\Facades\Storage;
+
 use Illuminate\Database\Seeder;
+
 use App\Models\Story;
 use App\Models\Album;
-
-use Storage;
 
 class DatabaseSeeder extends Seeder
 {
