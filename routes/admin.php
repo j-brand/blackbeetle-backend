@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\StoryController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\AdminController;
 
 /*
@@ -80,6 +81,17 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/uploadvideo/{id}', [PostController::class, 'uploadVideo']);
         Route::delete('/video/{id}', [PostController::class, 'deleteVideo']);
         Route::post('/{id}/position', [PostController::class, 'changeImagePosition']);
+    });
+
+    /*
+    | Comment routes - Kommentare
+    */
+    Route::group(['prefix' => 'comment'], function () {
+        Route::get('/{id}', [CommentController::class, 'get']);
+        Route::get('/byPost/{id}', [CommentController::class, 'getByPost']);
+        //Route::post('/create', [CommentController::class, 'store']);
+        Route::post('/update/{id}', [CommentController::class, 'update']);
+        Route::delete('/{id}', [CommentController::class, 'destroy']);
     });
 
     /*

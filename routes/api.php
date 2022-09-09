@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\AlbumController;
 use App\Http\Controllers\Frontend\StoryController;
 use App\Http\Controllers\Frontend\NotificationController;
+use App\Http\Controllers\Frontend\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,3 +30,5 @@ Route::get('/story', [StoryController::class, 'getStories']);
 Route::get('/story/{slug}/{order?}', [StoryController::class, 'getStoryBySlug']);
 
 Route::post('/newsletter/subscribe', [NotificationController::class, 'store']);
+
+Route::post('/comment', [CommentController::class, 'store']);
