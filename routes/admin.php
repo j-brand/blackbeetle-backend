@@ -118,6 +118,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('dashboard', [AdminController::class, 'getDashboard']);
 
+    /* 
+    | Nothification routes - Benachrichtigungen/Subscriptions
+    */
+
+    Route::post('/nothify', [SubscriptionController::class, 'nothify']);
 
     /* 
     | Authentication routes
