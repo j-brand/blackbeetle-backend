@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Notification;
+namespace App\Http\Requests\Newsletter;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,9 +24,9 @@ class SubscriptionStore extends FormRequest
     public function rules()
     {
         return [
-            'email'  => 'required|email',
-            'name'  => 'required|string',
-            'story_id' => 'required|exists:stories,id',
+            'email'            => 'required|email',
+            'name'             => 'required|string',
+            'option'           => 'regex:/^[a-z0-9\s]+$/i',
         ];
     }
 }

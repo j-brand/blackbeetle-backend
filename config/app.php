@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Facade;
 
 return [
 
+    'admin_email' => env('ADMIN_EMAIL', 'johannes@blackbeetle.de'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -58,6 +60,9 @@ return [
 
     'asset_url' => env('ASSET_URL'),
 
+    //The Url of the Frontend Application
+    'frontend_url' => env('FRONTEND_URL'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
@@ -82,7 +87,7 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'de',
 
     /*
     |--------------------------------------------------------------------------

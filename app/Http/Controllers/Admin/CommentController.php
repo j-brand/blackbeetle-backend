@@ -1,43 +1,15 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Comment\CommentUpdate;
 use Illuminate\Http\Request;
 use App\Models\Comment;
 use App\Models\Post;
 
 class CommentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */ 
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
@@ -45,36 +17,48 @@ class CommentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id){
+    public function getByPost($id)
+    {
 
         $comments = Post::find($id)->comments()->get();
-       
-        return view('admin.comment.index', compact('comments'));
 
+        return response()->json($comments, 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Searches for a comment (by ID) and returns it
+     * 
+     * @param int $id   -   Comment ID
+     * 
+     * @return json return the post resource
      */
-    public function update(Request $request, $id)
+    public function get($id)
     {
-        //
+        $comment = Comment::find($id);
+        return response()->json($comment, 200);
     }
+
+
+    /**
+     * Update the comment resource
+     * 
+     * @param App\Http\Request\Comment\CommentUpdate $request
+     * @param int $id   -   comment ID
+     * 
+     * @return json return the updated comment resource
+     */
+    public function update(CommentUpdate $request, $id)
+    {
+
+        $validated = $request->validated();
+
+        $comment = Comment::find($id);
+        $comment->update($validated);
+
+        return response()->json($comment, 200);
+    }
+    
 
     /**
      * Remove the specified resource from storage.
@@ -82,7 +66,8 @@ class CommentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id){
+    public function destroy($id)
+    {
         $comment = Comment::find($id);
         $comment->delete();
         return response()->json(['success' => true]);

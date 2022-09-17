@@ -8,7 +8,10 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\StoryController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\SubscriberController;
+use App\Http\Controllers\Admin\SubscriptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,6 +86,39 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     });
 
     /*
+    | Comment routes - Kommentare
+    */
+    Route::group(['prefix' => 'comment'], function () {
+        Route::get('/{id}', [CommentController::class, 'get']);
+        Route::get('/byPost/{id}', [CommentController::class, 'getByPost']);
+        //Route::post('/create', [CommentController::class, 'store']);
+        Route::post('/update/{id}', [CommentController::class, 'update']);
+        Route::delete('/{id}', [CommentController::class, 'destroy']);
+    });
+
+    /*
+    | Subscriber routes - Abonnenten
+    */
+    Route::group(['prefix' => 'subscriber'], function () {
+        Route::get('/', [SubscriberController::class, 'index']);
+        Route::get('/send-verification/{id}', [SubscriberController::class, 'sendVerification']);
+        Route::delete('/{id}', [SubscriberController::class, 'destroy']);
+        /*         Route::get('/byPost/{id}', [CommentController::class, 'getByPost']);
+        Route::post('/update/{id}', [CommentController::class, 'update']);
+        */
+    });
+
+    /*
+    | Subscription routes - Abonnements
+    */
+    Route::group(['prefix' => 'subscriptions'], function () {
+        /*         Route::get('/{id}', [CommentController::class, 'get']);
+        Route::get('/byPost/{id}', [CommentController::class, 'getByPost']);
+        Route::post('/update/{id}', [CommentController::class, 'update']);
+        Route::delete('/{id}', [CommentController::class, 'destroy']); */
+    });
+
+    /*
     | Image routes - Bilder
     */
     Route::group(['prefix' => 'image'], function () {
@@ -106,6 +142,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('dashboard', [AdminController::class, 'getDashboard']);
 
+    /* 
+    | Nothification routes - Benachrichtigungen/Subscriptions
+    */
+
+    Route::post('/nothify', [SubscriptionController::class, 'nothify']);
 
     /* 
     | Authentication routes

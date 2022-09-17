@@ -6,6 +6,8 @@ use Storage;
 
 use App\Models\Post;
 use App\Models\Story;
+use App\Models\Comment;
+
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 use App\Http\Traits\ImageTrait;
@@ -49,6 +51,10 @@ class PostFactory extends Factory
                     $post->images()->attach($image->id, ['position' => $imageCount + 1]);
                 });
             }
+
+            //Create Comments
+            $rand = rand(0, 5);
+            Comment::factory()->count($rand)->create(['post_id' => $post->id]);
         });
     }
 
