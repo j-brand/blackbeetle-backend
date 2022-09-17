@@ -29,39 +29,47 @@ class SubscriptionController extends Controller
      * Story: s[Story ID]
      * 
      */
-    public function store(SubscriptionStore $request)
+    public function create(SubscriptionStore $request)
     {
         $validated = $request->validated();
 
         //check if E-Mail already exists in table newsletter_subscriptions
-        if (Subscriber::where('email', $validated['email'])->exists()) {
-
-            //check if E-Mail is Verified
-            if (Subscriber::where('email', $validated['email'])->pluck('verified_at')[0] === NULL) {
-                return response()->json(['message' => trans('messages.subscription_verify_first', ['href' => '/resend-verification'])], 409);
-            }
-        } else {
+        if (!Subscriber::where('email', $validated['email'])->exists()) {
             $subscriber = new Subscriber();
             $subscriber->email = $validated['email'];
             $subscriber->name = $validated['name'];
             $subscriber->token =  (string) Str::uuid();
             $subscriber->save();
+
+            $this->store($subscriber->id, $validated['option']);
+            $subscriber = Subscriber::where('email', $validated['email'])->first();
+
+            $validated['token'] = $subscriber->token;
+
+            $this->sendVerificationMail($validated);
+            return response()->json(['message' => trans('messages.subscription_created')], 200);
         }
 
-        $options['story_id'] = $validated['option'];
+
+        //check if E-Mail is Verified
+        if (Subscriber::where('email', $validated['email'])->pluck('verified_at')[0] === NULL) {
+            return response()->json(['message' => trans('messages.subscription_verify_first', ['href' => '/resend-verification'])], 409);
+        }
+
+
         $subscriber = Subscriber::where('email', $validated['email'])->first();
+        $this->store($subscriber->id, $validated['option']);
 
-
-        $subscription = new Subscription();
-        $subscription->subscriber_id = $subscriber->id;
-        $subscription->option = $validated['option'];
-        $subscription->save();
-
-        $validated['token'] = $subscriber->token;
-
-        $this->sendMail($validated);
 
         return response()->json(['message' => trans('messages.subscription_stored')], 200);
+    }
+
+    public function store($subscriber_id, $option)
+    {
+        $subscription = new Subscription();
+        $subscription->subscriber_id = $subscriber_id;
+        $subscription->option = $option;
+        $subscription->save();
     }
 
 
@@ -135,7 +143,7 @@ class SubscriptionController extends Controller
         return response()->json(['message' => trans('messages.subscription_config_stored')], 200);
     }
 
-    public function sendMail($data)
+    public function sendVerificationMail($data)
     {
         $details = [
             'name' => $data['name'],

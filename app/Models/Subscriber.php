@@ -15,6 +15,16 @@ class Subscriber extends Model
         'name', 'email'
     ];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'token',
+    ];
+
+    
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);

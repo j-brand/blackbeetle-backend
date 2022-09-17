@@ -6,8 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Story;
 use App\Models\Album;
 use App\Models\Subscriber;
-
-use Storage;
+use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
 {

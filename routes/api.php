@@ -33,7 +33,7 @@ Route::get('/story/{slug}/{order?}', [StoryController::class, 'getStoryBySlug'])
 
 Route::post('/comment', [CommentController::class, 'store']);
 
-Route::post('/newsletter', [SubscriptionController::class, 'store']);
+Route::post('/newsletter', [SubscriptionController::class, 'create']);
 Route::post('/verify-email', [SubscriptionController::class, 'verify']);
 Route::post('/resend-verification', [SubscriptionController::class, 'resend']);
 Route::get('/subscriptions/{token}', [SubscriptionController::class, 'getSubscriptions']);

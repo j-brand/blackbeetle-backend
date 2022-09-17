@@ -32,7 +32,7 @@ class CommentController extends Controller
 
         //send Email Notification to all admin Emails (.env)
         $story = $comment->post->story;
-        $admin_mails = array_map('trim', explode(',', env('ADMIN_EMAIL')));
+        $admin_mails = array_map('trim', explode(',', config('app.admin_email')));
         Mail::to($admin_mails)->send(new newPostComment($story, "Neuer Kommentar"));
 
         return response()->json($comment, 200);
