@@ -16,7 +16,7 @@ class CreateNewsletterSubscriptionsTable extends Migration
         Schema::create('newsletter_subscriptions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();            
+            $table->string('email');            
             $table->timestamp('email_verified_at')->nullable();
             $table->foreignId('story_id')->constrained()->onDelete('cascade');
             $table->softDeletes();
