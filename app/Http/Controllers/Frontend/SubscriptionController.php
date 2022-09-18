@@ -47,6 +47,7 @@ class SubscriptionController extends Controller
             $validated['token'] = $subscriber->token;
 
             $this->sendVerificationMail($validated);
+
             return response()->json(['message' => trans('messages.subscription_created')], 200);
         }
 
