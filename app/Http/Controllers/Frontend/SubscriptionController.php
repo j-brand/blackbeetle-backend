@@ -99,7 +99,7 @@ class SubscriptionController extends Controller
                 'token' => $sub->token
             ];
 
-            $this->sendMail($data);
+            $this->sendVerificationMail($data);
         }
 
         return response()->json(['message' => trans('messages.subscription_verification_send')], 200);
