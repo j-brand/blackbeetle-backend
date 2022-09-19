@@ -68,7 +68,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/create', [StoryController::class, 'store']);
         Route::post('/update/{id}', [StoryController::class, 'update']);
         Route::delete('/{id}', [StoryController::class, 'destroy']);
-        Route::post('/upload/{id}', [StoryController::class, 'upload']);
     });
 
     /*
