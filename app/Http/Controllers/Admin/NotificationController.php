@@ -7,7 +7,7 @@ use App\Http\Requests\Newsletter\SendNewsletter;
 use App\Jobs\SendNotificationMail;
 use App\Models\Subscription;
 
-class SubscriptionController extends Controller
+class NotificationController extends Controller
 {
     public function nothify(SendNewsletter $request)
     {
