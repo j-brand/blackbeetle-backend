@@ -13,7 +13,7 @@ whoami
 git pull origin development
 
 # Install composer dependencies
-~/composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+/opt/plesk/php/8.1/bin/php ~/composer.phar install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 # Clear the old cache
 /opt/plesk/php/8.1/bin/php artisan clear-compiled
