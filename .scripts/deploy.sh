@@ -8,7 +8,7 @@ echo "Deployment master branch started ..."
 (/opt/plesk/php/8.1/bin/php artisan down) || true
 
 # Pull the latest version of the app
-git pull origin development
+git pull origin master
 
 # Install composer dependencies
 /opt/plesk/php/8.1/bin/php ~/composer.phar install --no-dev --no-interaction --prefer-dist --optimize-autoloader
