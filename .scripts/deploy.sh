@@ -21,9 +21,6 @@ git pull origin development
 # Recreate cache
 /opt/plesk/php/8.1/bin/php artisan optimize
 
-# Compile npm assets
-npm run prod
-
 # Run database migrations
 /opt/plesk/php/8.1/bin/php artisan migrate --force
 
