@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Deployment master branch started ..."
+echo "Deployment development branch started ..."
 
 # Enter maintenance mode or return true
 # if already is in maintenance mode
@@ -25,4 +25,4 @@ git pull origin development
 # Exit maintenance mode
 /opt/plesk/php/8.1/bin/php artisan up
 
-echo "Deployment master branch finished!"
+echo "Deployment development branch finished!"
