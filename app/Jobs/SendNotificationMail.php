@@ -1,7 +1,7 @@
 <?php
 namespace App\Jobs;
 
-use App\Mail\NothificationMail;
+use App\Mail\NotificationMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -36,7 +36,7 @@ class SendNotificationMail implements ShouldQueue
     public function handle()
     {
 
-        $email = new NothificationMail($this->details);
+        $email = new NotificationMail($this->details);
         Mail::to($this->details['email'])->send($email);
     }
 }

@@ -1,7 +1,7 @@
 @component('mail::message')
 
 Hallo **{{ $details['name'] }}**,  
-es gibt Neuhigkeiten!
+es gibt Neuigkeiten!
 
 @if($details['image'])
 @component('mail::image', ['src' => $details['image'], 'alt' => 'Post image'])

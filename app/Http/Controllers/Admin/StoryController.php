@@ -37,7 +37,7 @@ class StoryController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoryUpdate $request)
+    public function store(StoryStore $request)
     {
 
         $validated = $request->validated();
