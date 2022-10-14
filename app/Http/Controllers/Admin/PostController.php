@@ -113,7 +113,7 @@ class PostController extends Controller
         $validated = $request->validated();
 
         $post = Post::find($id);
-        $path = "{$post->story['path']}{$post->id}/";
+        $path = "{$post->story['path']}posts/{$post->id}/";
 
         $newImage = $this->saveImage($validated['file'], $path);
         $this->genVariants($newImage->id, "image_post");
