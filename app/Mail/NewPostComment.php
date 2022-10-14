@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class newPostComment extends Mailable
+class NewPostComment extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -23,6 +23,7 @@ class newPostComment extends Mailable
     public function __construct($story, $sub)
     {
         $this->story = $story;
+        $this->sub = $sub;
     }
 
     /**

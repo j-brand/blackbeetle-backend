@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Comment\CommentStore;
+use App\Jobs\SendAdminNotificationMail;
 use App\Mail\newPostComment;
 use App\Models\Comment;
 use Illuminate\Http\Request;
@@ -32,8 +33,7 @@ class CommentController extends Controller
 
         //send Email Notification to all admin Emails (.env)
         $story = $comment->post->story;
-        $admin_mails = array_map('trim', explode(',', config('app.admin_email')));
-        Mail::to($admin_mails)->send(new newPostComment($story, "Neuer Kommentar"));
+        SendAdminNotificationMail::dispatch($story)->onQueue('emails');
 
         return response()->json($comment, 200);
     }
