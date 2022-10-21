@@ -4,9 +4,9 @@ namespace App\Http\Traits;
 
 use App\Models\Image;
 
-use Storage;
 use IntImage;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 trait ImageTrait
 {
@@ -63,7 +63,10 @@ trait ImageTrait
         $filePath = "public/{$path}{$filename}.{$extension}";
 
         $imageFile = IntImage::make($image);
-        Storage::put($filePath, $imageFile->encode());
+        Storage::put($filePath, $imageFile->encode(), 'public');
+
+
+
 
         $imageObj               = new Image();
         $imageObj->title        = $filename;
