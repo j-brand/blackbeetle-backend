@@ -32,6 +32,11 @@ trait ImageTrait
         11 =>   array('width' => 800,    'height' => 'null', 'slug' => '_aswipe',  'method' => false),
     );
 
+    private $filePermissions = [
+        'visibility' => 'public',
+        'directory_visibility' => 'public'
+    ];
+
     private $sizeConf = array(
         'album_image'       => [1, 2, 9],
         'album_title_image' => [2, 3, 4, 5, 6, 61, 7, 9],
@@ -63,7 +68,7 @@ trait ImageTrait
         $filePath = "public/{$path}{$filename}.{$extension}";
 
         $imageFile = IntImage::make($image);
-        Storage::put($filePath, $imageFile->encode(), 'public');
+        Storage::put($filePath, $imageFile->encode(), $this->filePermissions);
 
 
 
@@ -121,8 +126,8 @@ trait ImageTrait
             $filePath = 'public/' . $imageModel->path . $imageModel->title . $this->sizes[$size]['slug'] . '.' . $imageModel->extension;
             $filePathLazy = 'public/' . $imageModel->path . $imageModel->title . $this->sizes[$size]['slug'] . '_lazy.' . $imageModel->extension;
 
-            Storage::put($filePath, $newImage->encode());
-            Storage::put($filePathLazy, $this->generateLazy($newImage)->encode());
+            Storage::put($filePath, $newImage->encode(), $this->filePermissions);
+            Storage::put($filePathLazy, $this->generateLazy($newImage)->encode(), $this->filePermissions);
         }
         return true;
     }
