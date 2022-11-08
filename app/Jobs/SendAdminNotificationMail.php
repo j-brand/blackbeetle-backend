@@ -1,22 +1,21 @@
 <?php
+
 namespace App\Jobs;
 
-use App\Mail\NotificationMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+
+use App\Mail\NewPostComment;
 use Illuminate\Support\Facades\Mail;
 
-class SendNotificationMail implements ShouldQueue
+class SendAdminNotificationMail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-
     public $details;
-
     /**
      * Create a new job instance.
      *
@@ -27,7 +26,6 @@ class SendNotificationMail implements ShouldQueue
         $this->details = $details;
     }
 
-
     /**
      * Execute the job.
      *
@@ -36,7 +34,9 @@ class SendNotificationMail implements ShouldQueue
     public function handle()
     {
 
-        $email = new NotificationMail($this->details);
-        Mail::to($this->details['email'])->send($email);
+        $admin_mails = array_map('trim', explode(',', config('app.admin_email')));
+
+        $email = new NewPostComment($this->details, "Neuer Kommentar auf Blackbeetle");
+        Mail::to($admin_mails)->send($email);
     }
 }

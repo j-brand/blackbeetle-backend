@@ -152,6 +152,6 @@ class SubscriptionController extends Controller
             'verifyLink' => config('app.frontend_url') . '/subscription/verify/' . $data['token'],
             'manageLink' => config('app.frontend_url') . '/subscription/manage/' . $data['token'],
         ];
-        SendVerificationMail::dispatch($details);
+        SendVerificationMail::dispatch($details)->onQueue('emails');
     }
 }

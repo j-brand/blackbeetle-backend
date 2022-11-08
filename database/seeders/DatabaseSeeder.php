@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
 
         Album::factory()->count(2)->create();
         Story::factory()->count(2)->create();
-        //Subscriber::factory()->count(10)->create();
+        Subscriber::factory()->count(10)->create();
 
     }
 }

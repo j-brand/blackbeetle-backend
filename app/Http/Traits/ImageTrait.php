@@ -4,9 +4,9 @@ namespace App\Http\Traits;
 
 use App\Models\Image;
 
-use Storage;
 use IntImage;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 trait ImageTrait
 {
@@ -31,6 +31,11 @@ trait ImageTrait
         10 =>   array('width' => 60,     'height' => 'null', 'slug' => '_lazy',    'method' => false),
         11 =>   array('width' => 800,    'height' => 'null', 'slug' => '_aswipe',  'method' => false),
     );
+
+    private $filePermissions = [
+        'visibility' => 'public',
+        'directory_visibility' => 'public'
+    ];
 
     private $sizeConf = array(
         'album_image'       => [1, 2, 9],
@@ -63,7 +68,10 @@ trait ImageTrait
         $filePath = "public/{$path}{$filename}.{$extension}";
 
         $imageFile = IntImage::make($image);
-        Storage::put($filePath, $imageFile->encode());
+        Storage::put($filePath, $imageFile->encode(), $this->filePermissions);
+
+
+
 
         $imageObj               = new Image();
         $imageObj->title        = $filename;
@@ -118,8 +126,8 @@ trait ImageTrait
             $filePath = 'public/' . $imageModel->path . $imageModel->title . $this->sizes[$size]['slug'] . '.' . $imageModel->extension;
             $filePathLazy = 'public/' . $imageModel->path . $imageModel->title . $this->sizes[$size]['slug'] . '_lazy.' . $imageModel->extension;
 
-            Storage::put($filePath, $newImage->encode());
-            Storage::put($filePathLazy, $this->generateLazy($newImage)->encode());
+            Storage::put($filePath, $newImage->encode(), $this->filePermissions);
+            Storage::put($filePathLazy, $this->generateLazy($newImage)->encode(), $this->filePermissions);
         }
         return true;
     }

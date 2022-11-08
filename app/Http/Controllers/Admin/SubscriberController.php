@@ -33,7 +33,8 @@ class SubscriberController extends Controller
             'verifyLink' => config('app.frontend_url') . '/subscription/verify/' . $sub->token,
             'manageLink' => config('app.frontend_url') . '/subscription/manage/' . $sub->token,
         ];
-        SendVerificationMail::dispatch($details);
+        
+        SendVerificationMail::dispatch($details)->onQueue('emails');
 
         return response()->json([
             'message' => 'Mail wird versand.'

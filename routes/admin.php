@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\StoryController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\SubscriberController;
 use App\Http\Controllers\Admin\SubscriptionController;
 
@@ -79,7 +80,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/update/{id}', [PostController::class, 'update']);
         Route::delete('/{id}', [PostController::class, 'destroy']);
         Route::post('/upload/{id}', [PostController::class, 'uploadImage']);
-        Route::post('/uploadvideo/{id}', [PostController::class, 'uploadVideo']);
+        Route::post('/upload-video/{id}', [PostController::class, 'uploadVideo']);
         Route::delete('/video/{id}', [PostController::class, 'deleteVideo']);
         Route::post('/{id}/position', [PostController::class, 'changeImagePosition']);
     });
@@ -142,10 +143,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('dashboard', [AdminController::class, 'getDashboard']);
 
     /* 
-    | Nothification routes - Benachrichtigungen/Subscriptions
+    | Notification routes - Benachrichtigungen/Subscriptions
     */
 
-    Route::post('/nothify', [SubscriptionController::class, 'nothify']);
+    Route::post('/notify', [NotificationController::class, 'notify']);
 
     /* 
     | Authentication routes

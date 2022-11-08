@@ -30,7 +30,7 @@ class NotificationMail extends Mailable
      */
     public function build()
     {
-        return $this->subject($this->details['subject'])->markdown('mails.nothificationEmail')
+        return $this->subject($this->details['subject'])->markdown('mail.notificationEmail')
             ->with('details', $this->details);
     }
 }
