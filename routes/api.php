@@ -7,6 +7,7 @@ use App\Http\Controllers\Frontend\AlbumController;
 use App\Http\Controllers\Frontend\StoryController;
 use App\Http\Controllers\Frontend\SubscriptionController;
 use App\Http\Controllers\Frontend\CommentController;
+use App\Http\Controllers\Frontend\OptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,17 +20,11 @@ use App\Http\Controllers\Frontend\CommentController;
 |
 */
 
-/* Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-}); */
-
 Route::get('/album', [AlbumController::class, 'getAlbums']);
 Route::get('/album/{slug}', [AlbumController::class, 'getAlbumBySlug']);
 
 Route::get('/story', [StoryController::class, 'getStories']);
 Route::get('/story/{slug}/{order?}', [StoryController::class, 'getStoryBySlug']);
-
-//Route::post('/newsletter/subscribe', [NotificationController::class, 'store']);
 
 Route::post('/comment', [CommentController::class, 'store']);
 
@@ -38,3 +33,5 @@ Route::post('/verify-email', [SubscriptionController::class, 'verify']);
 Route::post('/resend-verification', [SubscriptionController::class, 'resend']);
 Route::get('/subscriptions/{token}', [SubscriptionController::class, 'getSubscriptions']);
 Route::post('/subscription', [SubscriptionController::class, 'updateSubscription']);
+
+Route::get('/option/my_location', [OptionController::class, 'getLocation']);

@@ -10,7 +10,7 @@ class AlbumController extends Controller
 {
     public function getAlbums()
     {
-        $albums = Album::with('title_image')->where('active', 1)->withCount('images')->get();
+        $albums = Album::with('title_image')->orderBy('created_at', 'desc')->where('active', 1)->withCount('images')->get();
         return response()->json($albums);
     }
 
