@@ -10,7 +10,7 @@ class StoryController extends Controller
 {
     public function getStories()
     {
-        $stories = Story::with('title_image')->orderBy('position', 'desc')->where('active', 1)->withCount('posts')->get();
+        $stories = Story::with('title_image')->orderBy('created_at', 'desc')->where('active', 1)->withCount('posts')->get();
         return response()->json($stories);
     }
 
