@@ -120,8 +120,9 @@ class PostController extends Controller
         $newImage = $this->saveImage($validated['file'], $path);
         $this->genVariants($newImage->id, "image_post");
 
-        $lastImage = $post->images->sortByDesc('position')->first();
-        $post->images()->attach($newImage->id, ['position' => $lastImage ? $lastImage->position + 1 : 0]);
+        $lastImage = $post->images->sortBy('pivot_position')->last();
+
+        $post->images()->attach($newImage->id, ['position' => $lastImage ? $lastImage['pivot']['position'] + 1 : 1]);
 
         return response()->json($newImage, 200);
     }
