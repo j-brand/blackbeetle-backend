@@ -36,7 +36,7 @@ class Story extends Model
 
     public function posts()
     {
-        return $this->hasMany('App\Models\Post');
+        return $this->hasMany('App\Models\Post')->orderBy('position','asc');
     }
 
     public function title_image()
