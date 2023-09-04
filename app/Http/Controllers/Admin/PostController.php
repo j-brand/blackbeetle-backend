@@ -16,7 +16,9 @@ use App\Http\Requests\Post\BlogPostUpdate;
 use App\Http\Requests\Post\BlogPostStore;
 use App\Http\Requests\Post\BlogPostUploadImage;
 use App\Http\Requests\Post\BlogPostChangeImagePosition;
+use App\Http\Requests\Post\BlogPostSwapImagePosition;
 use App\Http\Requests\Post\BlogPostUploadVideo;
+use Illuminate\Database\Eloquent\Collection;
 
 class PostController extends Controller
 {
@@ -118,8 +120,9 @@ class PostController extends Controller
         $newImage = $this->saveImage($validated['file'], $path);
         $this->genVariants($newImage->id, "image_post");
 
-        $lastImage = $post->images->sortByDesc('position')->first();
-        $post->images()->attach($newImage->id, ['position' => $lastImage ? $lastImage->position + 1 : 0]);
+        $lastImage = $post->images->sortBy('pivot_position')->last();
+
+        $post->images()->attach($newImage->id, ['position' => $lastImage ? $lastImage['pivot']['position'] + 1 : 1]);
 
         return response()->json($newImage, 200);
     }
@@ -203,10 +206,52 @@ class PostController extends Controller
 
         $validated = $request->validated();
 
-        $album = Post::find($id);
-        $album->images()->updateExistingPivot($validated['image_id'], ['position' => $validated['position']]);
+        $post = Post::find($id);
+        $post->images()->updateExistingPivot($validated['image_id'], ['position' => $validated['position']]);
         return response()->json(['success' => true]);
     }
+
+    public function swapImagePosition(BlogPostSwapImagePosition $request, $id)
+    {
+        $validated = $request->validated();
+
+        $post = Post::find($id);
+
+        $images = $post->images;
+
+        $pos_curr = $validated['currentIndex'];
+        $pos_prev = $validated['previousIndex'];
+        $image_id = $validated['image_id'];
+
+
+
+        $image_current = $images->where('id', $validated['image_id'])->first();
+        $post->images()->updateExistingPivot($image_current, ['position' => $validated['currentIndex']]);
+
+
+        if ($pos_curr >= $pos_prev) {
+            foreach ($images as $image) {
+                if ($image->pivot->position <= $pos_curr && $image->pivot->position >= $pos_prev && $image->id != $image_id) {
+
+                    $pos =  $image->pivot->position - 1;
+                    $post->images()->updateExistingPivot($image->id, ['position' => $pos <= 1 ? 1 : $pos]);
+                }
+            };
+        } else {
+            foreach ($images as $image) {
+                if ($image->pivot->position >= $pos_curr && $image->pivot->position <= $pos_prev && $image->id != $image_id) {
+
+                    $post->images()->updateExistingPivot($image->id, ['position' => $image->pivot->position + 1]);
+                }
+            };
+        }
+
+
+        return response()->json(['success' => 1]);
+    }
+
+
+
     /* 
     //regenerate Image Sizes from Image posts
     public function generateImages($id)
