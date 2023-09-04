@@ -26,7 +26,7 @@ class StoryController extends Controller
      */
     public function index()
     {
-        $stories = Story::withCount('posts')->get();
+        $stories = Story::withCount('posts')->orderBy('position')->get();
         return response()->json($stories);
     }
 
