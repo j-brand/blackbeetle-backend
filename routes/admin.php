@@ -83,6 +83,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::post('/upload-video/{id}', [PostController::class, 'uploadVideo']);
         Route::delete('/video/{id}', [PostController::class, 'deleteVideo']);
         Route::post('/{id}/position', [PostController::class, 'changeImagePosition']);
+        Route::post('/{id}/swap', [PostController::class, 'swapImagePosition']);
     });
 
     /*
