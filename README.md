@@ -2,15 +2,16 @@
 
 ## blackbeetle.de
 
-Blackbeetle is a small private website project that I started before my trip to Australia. In order to keep my family and friends up to date without sending everyone the same messages over and over again, I set up this little travel blog. The project has changed a lot over time. Whenever I try out a new technology, Blackbeetle is my test object. Initially, the entire page was implemented with Laravel framework. Later I redesigned the front end in VueJs. At the moment the project is pretty messy, but I hope it gets better. I am currently in the process of setting up the administration interface with Angular.
+Blackbeetle is a small private website project that I started before my trip to Australia. In order to keep my family and friends up to date without sending everyone the same messages over and over again, I set up this little travel blog. The project has changed a lot over time. Whenever I try out a new technology, Blackbeetle is my test object. Initially, the entire page was implemented with Laravel framework. I later separated the API and created two frontends, one for the public and one for the administration.
 
-## The API
+## The Backend API
 
-The API delivers and receives data from the front end. 
-It also generates image variants, sends emails and takes care of authentication.
-This is where the magic happens...
+The backend is the oldest part of the project and is currently realised with Laravel 9. This is where the data is processed, e.g. generating image variations, sending emails and communicating with the database. The admin frontend is authenticated with Laravel Sanctum.
+In the long term, this part should be replaced by a [NestJS](https://nestjs.com/) backend, because I would like to get a little deeper into NestJs, expand my Typescript skills and because I actually want to get away from PHP.
 
 ## Technologies & Frameworks
 
-- [Laravel](https://laravel.com/) 9
+- [Laravel 9](https://laravel.com/)
 - [Laravel Sanctum](https://laravel.com/docs/9.x/sanctum)
+- for more infos check out the package.json
+
